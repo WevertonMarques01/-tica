@@ -36,7 +36,7 @@ define('SESSION_TIMEOUT', 3600); // 1 hora
  * Função para verificar se o usuário está logado
  */
 function isLoggedIn() {
-    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+    return isset($_SESSION['usuario_id']) && !empty($_SESSION['usuario_id']);
 }
 
 /**
@@ -70,4 +70,4 @@ function generateCSRFToken() {
 function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
-?> 
+?>
