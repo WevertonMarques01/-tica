@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 01/08/2025 às 01:08
+-- Tempo de geração: 17/08/2025 às 17:52
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.0.30
 
@@ -64,6 +64,15 @@ CREATE TABLE `logs` (
   `detalhes` text DEFAULT NULL,
   `data` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `logs`
+--
+
+INSERT INTO `logs` (`id`, `usuario_id`, `acao`, `detalhes`, `data`) VALUES
+(1, 2, 'logout', 'Logout realizado', '2025-08-17 01:27:57'),
+(2, 2, 'logout', 'Logout realizado', '2025-08-17 14:53:05'),
+(3, 2, 'logout', 'Logout realizado', '2025-08-17 14:53:47');
 
 -- --------------------------------------------------------
 
@@ -135,6 +144,13 @@ CREATE TABLE `usuarios` (
   `permissao` int(11) NOT NULL,
   `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `permissao`, `criado_em`) VALUES
+(2, 'Orcleison', 'admin@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 1, '0000-00-00 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -256,7 +272,7 @@ ALTER TABLE `financeiro`
 -- AUTO_INCREMENT de tabela `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `ordens_servico`
@@ -280,7 +296,7 @@ ALTER TABLE `receitas`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `vendas`
