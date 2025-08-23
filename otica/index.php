@@ -1,6 +1,3 @@
-<?php
-require_once '../../includes/auth_check.php';
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
