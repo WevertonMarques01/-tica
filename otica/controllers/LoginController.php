@@ -5,7 +5,17 @@
 
 // Incluir configuração do banco de dados
 require_once '../config/database.php';
+session_start();
 
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    // Destruir a sessão
+    session_unset();
+    session_destroy();
+
+    // Redirecionar para a página de login
+    header('Location: ../login.php');
+    exit();
+}
 class LoginController {
     
     private $db;
