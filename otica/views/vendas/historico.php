@@ -1,121 +1,398 @@
-<?php include 'otica/views/layout/header.php'; ?>
+<?php
+// Verificar autenticação
+require_once '../../includes/auth_check.php';
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-history"></i> Histórico de Vendas</h2>
-            <a href="/vendas/nova" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nova Venda
-            </a>
+// Conectar ao banco de dados
+require_once '../../config/database.php';
+$db = Database::getInstance()->getConnection();
+
+// Buscar vendas
+try {
+    $stmt = $db->prepare("
+        SELECT v.*, c.nome as cliente_nome 
+        FROM vendas v 
+        LEFT JOIN clientes c ON v.cliente_id = c.id 
+        ORDER BY v.data_venda DESC
+    ");
+    $stmt->execute();
+    $vendas = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Erro ao buscar vendas: " . $e->getMessage());
+    $vendas = [];
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Vendas - Ótica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'otica-primary': '#28d2c3',
+                        'otica-secondary': '#20b8a9',
+                        'otica-accent': '#f4a261',
+                        'otica-warm': '#e76f51',
+                        'otica-sage': '#a4c3a2',
+                        'otica-cream': '#f7f3e9',
+                        'otica-mist': '#e8f4f8',
+                        'otica-forest': '#2d5016',
+                        'otica-gold': '#f1c40f',
+                        'otica-coral': '#ff6b6b',
+                        'otica-blue': '#3b82f6',
+                        'otica-indigo': '#6366f1',
+                        'otica-purple': '#8b5cf6',
+                        'otica-pink': '#ec4899',
+                        'otica-red': '#ef4444',
+                        'otica-orange': '#f97316',
+                        'otica-yellow': '#eab308',
+                        'otica-lime': '#84cc16',
+                        'otica-green': '#22c55e',
+                        'otica-emerald': '#10b981',
+                        'otica-teal': '#14b8a6',
+                        'otica-cyan': '#06b6d4',
+                        'otica-sky': '#0ea5e9'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        /* Light Mode */
+        .light {
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+
+        .light .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Dark Mode */
+        .dark {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .dark .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .dark .text-gray-800 {
+            color: #f1f5f9;
+        }
+
+        .dark .text-gray-600 {
+            color: #cbd5e1;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-400 {
+            color: #64748b;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #0f172a;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #1e293b;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #334155;
+        }
+
+        /* Common Styles */
+        .card {
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .btn-primary {
+            background-color: #28d2c3;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #20b8a9;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(40, 210, 195, 0.3);
+        }
+
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+
+        .table-row {
+            transition: all 0.3s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f0fdfa;
+        }
+
+        .dark .table-row:hover {
+            background-color: #0f172a;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-6">
+                    <div class="flex items-center">
+                        <a href="../admin/index.php" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mr-4">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Histórico de Vendas</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Theme Toggle -->
+                        <button onclick="toggleTheme()" class="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600 theme-toggle">
+                            <i class="fas fa-moon text-gray-600 dark:text-yellow-400" id="theme-icon"></i>
+                        </button>
+                        <a href="nova.php" class="px-4 py-2 bg-otica-primary hover:bg-otica-secondary text-white rounded-md font-medium transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Nova Venda
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <?php if (isset($vendas) && !empty($vendas)): ?>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Valor Total</th>
-                            <th>Forma de Pagamento</th>
-                            <th>Data da Venda</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($vendas as $venda): ?>
-                            <tr>
-                                <td><?= $venda['id'] ?></td>
-                                <td><?= htmlspecialchars($venda['cliente_nome']) ?></td>
-                                <td>R$ <?= number_format($venda['valor_total'], 2, ',', '.') ?></td>
-                                <td>
-                                    <?php
-                                    $formasPagamento = [
-                                        'dinheiro' => 'Dinheiro',
-                                        'cartao_credito' => 'Cartão de Crédito',
-                                        'cartao_debito' => 'Cartão de Débito',
-                                        'pix' => 'PIX',
-                                        'boleto' => 'Boleto'
-                                    ];
-                                    echo $formasPagamento[$venda['forma_pagamento']] ?? $venda['forma_pagamento'];
-                                    ?>
-                                </td>
-                                <td><?= date('d/m/Y H:i', strtotime($venda['created_at'])) ?></td>
-                                <td>
-                                    <div class="btn-group" role="group">
-                                        <a href="/vendas/visualizar?id=<?= $venda['id'] ?>" 
-                                           class="btn btn-sm btn-outline-info" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Visualizar">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="/vendas/editar?id=<?= $venda['id'] ?>" 
-                                           class="btn btn-sm btn-outline-primary" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="/vendas/excluir?id=<?= $venda['id'] ?>" 
-                                           class="btn btn-sm btn-outline-danger" 
-                                           data-bs-toggle="tooltip" 
-                                           title="Excluir"
-                                           onclick="return confirm('Tem certeza que deseja excluir esta venda?')">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Estatísticas -->
-            <div class="row mt-4">
-                <div class="col-md-3">
-                    <div class="card bg-primary text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Total de Vendas</h5>
-                            <h3><?= count($vendas) ?></h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Valor Total</h5>
-                            <h3>
-                                R$ <?= number_format(array_sum(array_column($vendas, 'valor_total')), 2, ',', '.') ?>
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Ticket Médio</h5>
-                            <h3>
-                                R$ <?= count($vendas) > 0 ? number_format(array_sum(array_column($vendas, 'valor_total')) / count($vendas), 2, ',', '.') : '0,00' ?>
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-warning text-white">
-                        <div class="card-body">
-                            <h5 class="card-title">Última Venda</h5>
-                            <h6><?= date('d/m/Y', strtotime($vendas[0]['created_at'])) ?></h6>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php else: ?>
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Nenhuma venda encontrada. 
-                <a href="/vendas/nova" class="alert-link">Realizar primeira venda</a>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
 
-<?php include 'otica/views/layout/footer.php'; ?> 
+        <!-- Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <?php if (isset($_GET['success'])): ?>
+                <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded">
+                    <i class="fas fa-check-circle mr-2"></i>Venda realizada com sucesso!
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($vendas)): ?>
+                <!-- Estatísticas -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="card p-6 bg-blue-600 text-white">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-shopping-cart text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-sm font-medium">Total de Vendas</h3>
+                                <p class="text-2xl font-bold"><?php echo count($vendas); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-6 bg-green-600 text-white">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-dollar-sign text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-sm font-medium">Valor Total</h3>
+                                <p class="text-2xl font-bold">
+                                    R$ <?php echo number_format(array_sum(array_column($vendas, 'valor_total')), 2, ',', '.'); ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-6 bg-blue-500 text-white">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-chart-line text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-sm font-medium">Ticket Médio</h3>
+                                <p class="text-2xl font-bold">
+                                    R$ <?php echo count($vendas) > 0 ? number_format(array_sum(array_column($vendas, 'valor_total')) / count($vendas), 2, ',', '.') : '0,00'; ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card p-6 bg-yellow-600 text-white">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-calendar text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-sm font-medium">Última Venda</h3>
+                                <p class="text-sm font-bold">
+                                    <?php echo date('d/m/Y', strtotime($vendas[0]['data_venda'])); ?>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Vendas -->
+                <div class="card overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-white">Todas as Vendas</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        ID
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Cliente
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Valor Total
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Forma de Pagamento
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Data da Venda
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        Ações
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                                <?php foreach ($vendas as $venda): ?>
+                                    <tr class="table-row">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <?php echo $venda['id']; ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                <?php echo htmlspecialchars($venda['cliente_nome'] ?? 'Cliente não encontrado'); ?>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            R$ <?php echo number_format($venda['valor_total'], 2, ',', '.'); ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <?php
+                                            $formasPagamento = [
+                                                'dinheiro' => 'Dinheiro',
+                                                'cartao_credito' => 'Cartão de Crédito',
+                                                'cartao_debito' => 'Cartão de Débito',
+                                                'pix' => 'PIX',
+                                                'boleto' => 'Boleto'
+                                            ];
+                                            echo $formasPagamento[$venda['forma_pagamento']] ?? $venda['forma_pagamento'];
+                                            ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <?php echo date('d/m/Y H:i', strtotime($venda['data_venda'])); ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex space-x-2">
+                                                <a href="visualizar.php?id=<?php echo $venda['id']; ?>" 
+                                                   class="text-otica-primary hover:text-otica-secondary transition-colors">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="editar.php?id=<?php echo $venda['id']; ?>" 
+                                                   class="text-otica-blue hover:text-blue-600 transition-colors">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="excluir.php?id=<?php echo $venda['id']; ?>" 
+                                                   class="text-red-600 hover:text-red-900 transition-colors"
+                                                   onclick="return confirm('Tem certeza que deseja excluir esta venda?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php else: ?>
+                <!-- Empty State -->
+                <div class="text-center py-12">
+                    <i class="fas fa-shopping-cart text-4xl text-gray-400 dark:text-gray-500 mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Nenhuma venda encontrada</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">Comece realizando a primeira venda.</p>
+                    <a href="nova.php" class="px-6 py-3 bg-otica-primary hover:bg-otica-secondary text-white rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Realizar Primeira Venda
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                themeIcon.className = 'fas fa-moon text-gray-600';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                themeIcon.className = 'fas fa-sun text-yellow-400';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            html.classList.remove('light', 'dark');
+            html.classList.add(savedTheme);
+            
+            if (savedTheme === 'dark') {
+                themeIcon.className = 'fas fa-sun text-yellow-400';
+            } else {
+                themeIcon.className = 'fas fa-moon text-gray-600';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+        });
+    </script>
+</body>
+</html> 

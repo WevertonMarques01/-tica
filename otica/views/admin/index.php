@@ -50,7 +50,7 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,28 +60,33 @@ try {
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'azul-escuro': '#1e3a8a',
-                        'azul-claro': '#3b82f6',
-                        'azul-medio': '#2563eb',
-                        'azul-admin': '#28d2c3',
-                        'azul-admin-escuro': '#20b8a9',
-                        'branco': '#ffffff',
-                        'cinza-claro': '#f8fafc',
-                        'cinza-medio': '#64748b',
-                        'sombra': 'rgba(30, 58, 138, 0.1)',
+                        'otica-primary': '#28d2c3',
+                        'otica-secondary': '#20b8a9',
                         'otica-accent': '#f4a261',
                         'otica-warm': '#e76f51',
                         'otica-sage': '#a4c3a2',
                         'otica-cream': '#f7f3e9',
                         'otica-mist': '#e8f4f8',
+                        'otica-forest': '#2d5016',
                         'otica-gold': '#f1c40f',
-                        'otica-coral': '#ff6b6b'
-                    },
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif']
+                        'otica-coral': '#ff6b6b',
+                        'otica-blue': '#3b82f6',
+                        'otica-indigo': '#6366f1',
+                        'otica-purple': '#8b5cf6',
+                        'otica-pink': '#ec4899',
+                        'otica-red': '#ef4444',
+                        'otica-orange': '#f97316',
+                        'otica-yellow': '#eab308',
+                        'otica-lime': '#84cc16',
+                        'otica-green': '#22c55e',
+                        'otica-emerald': '#10b981',
+                        'otica-teal': '#14b8a6',
+                        'otica-cyan': '#06b6d4',
+                        'otica-sky': '#0ea5e9'
                     }
                 }
             }
@@ -96,12 +101,113 @@ try {
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f7f3e9 0%, #e8f4f8 100%);
-            min-height: 100vh;
+            transition: all 0.3s ease;
         }
 
+        /* Light Mode */
+        .light {
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+
+        .light .sidebar {
+            background-color: #1e293b;
+        }
+
+        .light .sidebar-item:hover {
+            background-color: #334155;
+        }
+
+        .light .sidebar-item.active {
+            background-color: #28d2c3;
+        }
+
+        .light .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .light .chart-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        .light .activity-item {
+            background-color: #f0fdfa;
+        }
+
+        .light .activity-item:hover {
+            background-color: #ccfbf1;
+        }
+
+        /* Dark Mode */
+        .dark {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .dark .sidebar {
+            background-color: #1e293b;
+        }
+
+        .dark .sidebar-item:hover {
+            background-color: #334155;
+        }
+
+        .dark .sidebar-item.active {
+            background-color: #28d2c3;
+        }
+
+        .dark .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .dark .chart-container {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        .dark .activity-item {
+            background-color: #0f172a;
+        }
+
+        .dark .activity-item:hover {
+            background-color: #1e293b;
+        }
+
+        .dark .text-gray-800 {
+            color: #f1f5f9;
+        }
+
+        .dark .text-gray-600 {
+            color: #cbd5e1;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-400 {
+            color: #64748b;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #0f172a;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #1e293b;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #334155;
+        }
+
+        /* Common Styles */
         .sidebar {
-            background: linear-gradient(180deg, #1e3a8a 0%, #28d2c3 100%);
             box-shadow: 4px 0 20px rgba(0,0,0,0.1);
         }
 
@@ -112,63 +218,60 @@ try {
         }
 
         .sidebar-item:hover {
-            background: rgba(255,255,255,0.1);
             transform: translateX(5px);
         }
 
         .sidebar-item.active {
-            background: rgba(255,255,255,0.2);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(40, 210, 195, 0.3);
         }
 
         .card {
-            background: white;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #28d2c3 0%, #20b8a9 100%);
+            background-color: #28d2c3;
             color: white;
         }
 
         .stat-card.sales {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background-color: #3b82f6;
         }
 
         .stat-card.clients {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            background-color: #6366f1;
         }
 
         .stat-card.revenue {
-            background: linear-gradient(135deg, #28d2c3 0%, #1e3a8a 100%);
+            background-color: #10b981;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #28d2c3 0%, #20b8a9 100%);
+            background-color: #28d2c3;
             transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
+            background-color: #20b8a9;
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(40, 210, 195, 0.3);
         }
 
         .btn-danger {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background-color: #ef4444;
             transition: all 0.3s ease;
         }
 
         .btn-danger:hover {
+            background-color: #dc2626;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.3);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
         }
 
         .notification {
@@ -186,13 +289,6 @@ try {
             }
         }
 
-        .chart-container {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        }
-
         .recent-activity {
             max-height: 400px;
             overflow-y: auto;
@@ -202,27 +298,36 @@ try {
             padding: 12px;
             border-left: 3px solid #28d2c3;
             margin-bottom: 8px;
-            background: rgba(40, 210, 195, 0.05);
             border-radius: 0 8px 8px 0;
             transition: all 0.3s ease;
         }
 
         .activity-item:hover {
-            background: rgba(40, 210, 195, 0.1);
             transform: translateX(5px);
         }
 
-        /* Variáveis CSS para consistência */
-        :root {
-            --azul-escuro: #1e3a8a;
-            --azul-claro: #3b82f6;
-            --azul-medio: #2563eb;
-            --azul-admin: #28d2c3;
-            --azul-admin-escuro: #20b8a9;
-            --branco: #ffffff;
-            --cinza-claro: #f8fafc;
-            --cinza-medio: #64748b;
-            --sombra: rgba(30, 58, 138, 0.1);
+        .quick-action-card {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .quick-action-card:hover .icon {
+            transform: scale(1.1);
+        }
+
+        .icon {
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle {
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
         }
 
         @media (max-width: 768px) {
@@ -290,7 +395,7 @@ try {
 
             <!-- Logout Button -->
             <div class="absolute bottom-6 left-6 right-6">
-                <button onclick="logout()" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
+                <button onclick="showConfirmModal('Tem certeza que deseja sair?', function() { window.location.href = '../../controllers/LoginController.php?action=logout'; })" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     Sair
                 </button>
@@ -300,8 +405,8 @@ try {
 
     <!-- Mobile Menu Button -->
     <div class="lg:hidden fixed top-4 left-4 z-50">
-        <button onclick="toggleSidebar()" class="bg-white p-2 rounded-lg shadow-lg">
-            <i class="fas fa-bars text-gray-700"></i>
+        <button onclick="toggleSidebar()" class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600">
+            <i class="fas fa-bars text-gray-700 dark:text-gray-300"></i>
         </button>
     </div>
 
@@ -310,21 +415,26 @@ try {
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-                <p class="text-gray-600">Bem-vindo ao painel administrativo da Wiz</p>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+                <p class="text-gray-600 dark:text-gray-300">Bem-vindo ao painel administrativo da Wiz</p>
             </div>
             <div class="flex items-center space-x-4">
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600 theme-toggle">
+                    <i class="fas fa-moon text-gray-600 dark:text-yellow-400" id="theme-icon"></i>
+                </button>
+                
                 <div class="relative">
-                    <button class="bg-white p-3 rounded-lg shadow-md">
-                        <i class="fas fa-bell text-gray-600"></i>
+                    <button class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
                     </button>
                 </div>
-                <div class="flex items-center space-x-3 bg-white p-3 rounded-lg shadow-md">
-                                    <div class="w-8 h-8 bg-azul-admin rounded-full flex items-center justify-center">
-                    <i class="fas fa-user text-white text-sm"></i>
-                </div>
-                    <span class="text-gray-700 font-medium"><?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Admin'); ?></span>
+                <div class="flex items-center space-x-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                    <div class="w-8 h-8 bg-otica-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <span class="text-gray-700 dark:text-gray-300 font-medium"><?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Admin'); ?></span>
                 </div>
             </div>
         </div>
@@ -334,13 +444,13 @@ try {
             <div class="card stat-card p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-sm">Vendas Hoje</p>
-                        <p class="text-3xl font-bold text-white"><?php echo $vendasHoje['total'] ?? 0; ?></p>
-                        <p class="text-white/80 text-sm mt-1">
+                        <p class="text-black/90 text-sm font-medium">Vendas Hoje</p>
+                        <p class="text-3xl font-bold text-black"><?php echo $vendasHoje['total'] ?? 0; ?></p>
+                        <p class="text-black/80 text-sm mt-1">
                             R$ <?php echo number_format($vendasHoje['valor'] ?? 0, 2, ',', '.'); ?>
                         </p>
                     </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                    <div class="w-12 h-12 bg-black/20 rounded-full flex items-center justify-center">
                         <i class="fas fa-shopping-cart text-white text-xl"></i>
                     </div>
                 </div>
@@ -349,7 +459,7 @@ try {
             <div class="card stat-card sales p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-sm">Novos Clientes</p>
+                        <p class="text-white/90 text-sm font-medium">Novos Clientes</p>
                         <p class="text-3xl font-bold text-white"><?php echo $novosClientes['total'] ?? 0; ?></p>
                         <p class="text-white/80 text-sm mt-1">
                             Hoje
@@ -364,7 +474,7 @@ try {
             <div class="card stat-card clients p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-sm">Produtos Estoque</p>
+                        <p class="text-white/90 text-sm font-medium">Produtos Estoque</p>
                         <p class="text-3xl font-bold text-white"><?php echo $produtosEstoque['total'] ?? 0; ?></p>
                         <p class="text-white/80 text-sm mt-1">
                             Disponível
@@ -379,7 +489,7 @@ try {
             <div class="card stat-card revenue p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-white/80 text-sm">Receita Mensal</p>
+                        <p class="text-white/90 text-sm font-medium">Receita Mensal</p>
                         <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 0, ',', '.'); ?></p>
                         <p class="text-white/80 text-sm mt-1">
                             Este mês
@@ -396,33 +506,33 @@ try {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sales Chart -->
             <div class="lg:col-span-2 chart-container">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Vendas dos Últimos 7 Dias</h3>
-                <div class="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Vendas dos Últimos 7 Dias</h3>
+                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-600">
                     <div class="text-center">
-                        <i class="fas fa-chart-bar text-4xl text-gray-400 mb-2"></i>
-                        <p class="text-gray-500">Gráfico de vendas será implementado</p>
+                        <i class="fas fa-chart-bar text-4xl text-gray-400 dark:text-gray-500 mb-2"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Gráfico de vendas será implementado</p>
                     </div>
                 </div>
             </div>
 
             <!-- Recent Activity -->
             <div class="chart-container">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Atividade Recente</h3>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Atividade Recente</h3>
                 <div class="recent-activity">
                     <?php if (empty($atividades)): ?>
                         <div class="text-center py-8">
-                            <i class="fas fa-info-circle text-2xl text-gray-400 mb-2"></i>
-                            <p class="text-gray-500">Nenhuma atividade recente</p>
+                            <i class="fas fa-info-circle text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
+                            <p class="text-gray-500 dark:text-gray-400">Nenhuma atividade recente</p>
                         </div>
                     <?php else: ?>
                         <?php foreach ($atividades as $atividade): ?>
                             <div class="activity-item">
                                 <div class="flex items-start">
-                                    <div class="w-2 h-2 bg-azul-admin rounded-full mt-2 mr-3"></div>
+                                    <div class="w-2 h-2 bg-otica-primary rounded-full mt-2 mr-3"></div>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars(ucfirst($atividade['acao'])); ?></p>
-                                        <p class="text-xs text-gray-500"><?php echo htmlspecialchars($atividade['detalhes']); ?></p>
-                                        <p class="text-xs text-gray-400"><?php echo date('d/m/Y H:i', strtotime($atividade['data'])); ?></p>
+                                        <p class="text-sm font-medium text-gray-800 dark:text-white"><?php echo htmlspecialchars(ucfirst($atividade['acao'])); ?></p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($atividade['detalhes']); ?></p>
+                                        <p class="text-xs text-gray-400 dark:text-gray-500"><?php echo date('d/m/Y H:i', strtotime($atividade['data'])); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -434,36 +544,82 @@ try {
 
         <!-- Quick Actions -->
         <div class="mt-8">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Ações Rápidas</h3>
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Ações Rápidas</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="../vendas/nova.php" class="card p-6 text-center hover:bg-azul-admin hover:text-white transition-all duration-300">
-                    <i class="fas fa-plus-circle text-3xl text-azul-admin mb-3"></i>
+                <a href="../vendas/nova.php" class="card quick-action-card p-6 text-center hover:bg-otica-primary hover:text-white transition-all duration-300">
+                    <i class="fas fa-plus-circle text-3xl text-otica-primary mb-3 icon"></i>
                     <h4 class="font-semibold">Nova Venda</h4>
-                    <p class="text-sm text-gray-500 mt-1">Registrar nova venda</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Registrar nova venda</p>
                 </a>
 
-                <a href="../clientes/novo.php" class="card p-6 text-center hover:bg-azul-claro hover:text-white transition-all duration-300">
-                    <i class="fas fa-user-plus text-3xl text-azul-claro mb-3"></i>
+                <a href="../clientes/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-blue hover:text-white transition-all duration-300">
+                    <i class="fas fa-user-plus text-3xl text-otica-blue mb-3 icon"></i>
                     <h4 class="font-semibold">Novo Cliente</h4>
-                    <p class="text-sm text-gray-500 mt-1">Cadastrar cliente</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
-                <a href="../receitas/nova.php" class="card p-6 text-center hover:bg-azul-medio hover:text-white transition-all duration-300">
-                    <i class="fas fa-eye text-3xl text-azul-medio mb-3"></i>
+                <a href="../receitas/nova.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+                    <i class="fas fa-eye text-3xl text-otica-indigo mb-3 icon"></i>
                     <h4 class="font-semibold">Nova Receita</h4>
-                    <p class="text-sm text-gray-500 mt-1">Cadastrar receita</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar receita</p>
                 </a>
 
-                <a href="../financeiro/relatorio.php" class="card p-6 text-center hover:bg-azul-escuro hover:text-white transition-all duration-300">
-                    <i class="fas fa-chart-pie text-3xl text-azul-escuro mb-3"></i>
+                <a href="../financeiro/relatorio.php" class="card quick-action-card p-6 text-center hover:bg-otica-emerald hover:text-white transition-all duration-300">
+                    <i class="fas fa-chart-pie text-3xl text-otica-emerald mb-3 icon"></i>
                     <h4 class="font-semibold">Relatórios</h4>
-                    <p class="text-sm text-gray-500 mt-1">Gerar relatórios</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerar relatórios</p>
                 </a>
             </div>
         </div>
     </div>
 
+    <!-- Modal de Confirmação -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-full max-w-sm">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Confirmação</h2>
+        <p class="mb-6 text-gray-600 dark:text-gray-300" id="confirmModalMessage">Tem certeza que deseja sair?</p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeConfirmModal()" class="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white">Cancelar</button>
+            <button onclick="confirmModalAction()" class="px-4 py-2 rounded bg-otica-primary text-white font-semibold">Confirmar</button>
+        </div>
+    </div>
+</div>
+
     <script>
+        // Theme management
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                themeIcon.className = 'fas fa-moon text-gray-600';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                themeIcon.className = 'fas fa-sun text-yellow-400';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            html.classList.remove('light', 'dark');
+            html.classList.add(savedTheme);
+            
+            if (savedTheme === 'dark') {
+                themeIcon.className = 'fas fa-sun text-yellow-400';
+            } else {
+                themeIcon.className = 'fas fa-moon text-gray-600';
+            }
+        }
+
         // Toggle sidebar on mobile
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
@@ -477,8 +633,31 @@ try {
             }
         }
 
+        // Confirm modal functions
+        let confirmModalCallback = null;
+
+        function showConfirmModal(message, callback) {
+            document.getElementById('confirmModalMessage').textContent = message;
+            document.getElementById('confirmModal').classList.remove('hidden');
+            confirmModalCallback = callback;
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmModalCallback = null;
+        }
+
+        function confirmModalAction() {
+            if (typeof confirmModalCallback === 'function') {
+                confirmModalCallback();
+            }
+            closeConfirmModal();
+        }
+
         // Add active class to current menu item
         document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            
             const currentPath = window.location.pathname;
             const menuItems = document.querySelectorAll('.sidebar-item');
             

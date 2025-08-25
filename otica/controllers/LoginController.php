@@ -35,7 +35,7 @@ class LoginController {
                 $_SESSION['usuario_id'] = $usuario['id'];
                 $_SESSION['usuario_nome'] = $usuario['nome'];
                 $_SESSION['usuario_email'] = $usuario['email'];
-                $_SESSION['usuario_permissao'] = $usuario['permissao'];
+                $_SESSION['usuario_permissao'] = $usuario['perfil'];
                 $_SESSION['logado'] = true;
                 
                 // Redirecionar para dashboard
@@ -52,11 +52,11 @@ class LoginController {
      */
     private function authenticateUser($email, $password) {
         try {
-            $stmt = $this->db->prepare("SELECT id, nome, email, senha_hash, permissao FROM usuarios WHERE email = ?");
+            $stmt = $this->db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ?");
             $stmt->execute([$email]);
             $usuario = $stmt->fetch();
             
-            if ($usuario && password_verify($password, $usuario['senha_hash'])) {
+            if ($usuario && password_verify($password, $usuario['senha'])) {
                 return $usuario;
             }
             
@@ -96,7 +96,7 @@ class LoginController {
         }
         
         session_destroy();
-        header('Location: ../../otica/index.php');
+        header('Location: ../login.php');
         exit;
     }
 }

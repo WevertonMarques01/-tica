@@ -5,7 +5,7 @@
  */
 
 // Incluir arquivo de configuração
-require_once 'config/database.php';
+require_once 'otica/config/database.php';
 
 echo "<h2>Teste de Conexão com o Banco de Dados</h2>";
 echo "<hr>";

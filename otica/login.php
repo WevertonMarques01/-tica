@@ -13,15 +13,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once 'config/database.php';
             $db = Database::getInstance()->getConnection();
             
-            $stmt = $db->prepare("SELECT id, nome, email, senha_hash, permissao FROM usuarios WHERE email = ?");
+            $stmt = $db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ? AND ativo = 1");
             $stmt->execute([$email]);
             $usuario = $stmt->fetch();
             
-            if ($usuario && password_verify($password, $usuario['senha_hash'])) {
+            if ($usuario && password_verify($password, $usuario['senha'])) {
                 $_SESSION['usuario_id'] = $usuario['id'];
                 $_SESSION['usuario_nome'] = $usuario['nome'];
                 $_SESSION['usuario_email'] = $usuario['email'];
-                $_SESSION['usuario_permissao'] = $usuario['permissao'];
+                $_SESSION['usuario_permissao'] = $usuario['perfil'];
                 header('Location: views/admin/index.php');
                 exit();
             } else {
