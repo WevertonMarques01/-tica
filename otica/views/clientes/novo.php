@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: all 0.3s ease;
         }
 
-        .theme-toggle:hover {
+        .theme-toggle.rotated {
             transform: rotate(180deg);
         }
     </style>
@@ -283,17 +283,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function toggleTheme() {
             const html = document.documentElement;
             const themeIcon = document.getElementById('theme-icon');
+            const themeButton = document.querySelector('.theme-toggle');
             
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 html.classList.add('light');
                 themeIcon.className = 'fas fa-moon text-gray-600';
                 localStorage.setItem('theme', 'light');
+                // Remover rotação quando voltar para o tema claro
+                themeButton.classList.remove('rotated');
             } else {
                 html.classList.remove('light');
                 html.classList.add('dark');
                 themeIcon.className = 'fas fa-sun text-yellow-400';
                 localStorage.setItem('theme', 'dark');
+                // Adicionar rotação quando ativar o tema escuro
+                themeButton.classList.add('rotated');
             }
         }
 
