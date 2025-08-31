@@ -18,7 +18,7 @@ try {
 
 // Buscar produtos para o select
 try {
-    $stmt = $db->prepare("SELECT id, nome, preco, estoque FROM produtos WHERE estoque > 0 ORDER BY nome");
+    $stmt = $db->prepare("SELECT id, nome, preco_venda as preco FROM produtos ORDER BY nome");
     $stmt->execute();
     $produtos = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -42,10 +42,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Inserir venda
             $stmt = $db->prepare("
-                INSERT INTO vendas (cliente_id, forma_pagamento, valor_total, observacoes, data_venda) 
-                VALUES (?, ?, ?, ?, NOW())
+                INSERT INTO vendas (cliente_id, usuario_id, forma_pagamento, valor_total, observacoes, data_venda) 
+                VALUES (?, ?, ?, ?, ?, NOW())
             ");
-            $result = $stmt->execute([$cliente_id, $forma_pagamento, $valor_total, $observacoes]);
+            $result = $stmt->execute([
+                $cliente_id,
+                $_SESSION['usuario_id'], // usuário logado
+                $forma_pagamento,
+                $valor_total,
+                $observacoes
+            ]);
             
             if ($result) {
                 $venda_id = $db->lastInsertId();
@@ -55,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!empty($produto['id']) && !empty($produto['quantidade'])) {
                         $stmt = $db->prepare("
                             INSERT INTO venda_itens (venda_id, produto_id, quantidade, preco_unitario) 
-                            VALUES (?, ?, ?, (SELECT preco FROM produtos WHERE id = ?))
+                            VALUES (?, ?, ?, (SELECT preco_venda FROM produtos WHERE id = ?))
                         ");
                         $stmt->execute([$venda_id, $produto['id'], $produto['quantidade'], $produto['id']]);
                         
@@ -82,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } catch (PDOException $e) {
             $db->rollBack();
             error_log("Erro ao salvar venda: " . $e->getMessage());
-            $erro = 'Erro interno do sistema.';
+            $erro = 'Erro interno do sistema.'; // Mensagem genérica para o usuário
         }
     }
 }
@@ -339,9 +345,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <option value="">Selecione um produto</option>
                                         <?php foreach ($produtos as $produto): ?>
                                             <option value="<?php echo $produto['id']; ?>" 
-                                                    data-preco="<?php echo $produto['preco']; ?>"
-                                                    data-estoque="<?php echo $produto['estoque']; ?>">
-                                                <?php echo htmlspecialchars($produto['nome']); ?> - R$ <?php echo number_format($produto['preco'], 2, ',', '.'); ?>
+                                                    data-preco="<?php echo $produto['preco']; ?>">
+                                                <?php echo htmlspecialchars($produto['nome']); ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -457,22 +462,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         document.getElementById('adicionar-produto').addEventListener('click', function() {
             const container = document.getElementById('produtos-container');
             const novoProduto = document.querySelector('.produto-item').cloneNode(true);
-            
-            // Limpar valores
-            novoProduto.querySelector('.produto-select').value = '';
+
+            // Limpar valores do novo produto
+            novoProduto.querySelector('.produto-select').selectedIndex = 0;
             novoProduto.querySelector('.quantidade').value = '1';
             novoProduto.querySelector('.preco-unitario').value = '';
             novoProduto.querySelector('.subtotal').value = '';
-            
+
             // Atualizar nomes dos campos
             novoProduto.querySelector('.produto-select').name = `produtos[${produtoIndex}][id]`;
             novoProduto.querySelector('.quantidade').name = `produtos[${produtoIndex}][quantidade]`;
-            
+
+            // Adicionar event listeners ao novo item
+            adicionarEventListeners(novoProduto);
+
             container.appendChild(novoProduto);
             produtoIndex++;
-            
-            // Adicionar event listeners
-            adicionarEventListeners(novoProduto);
+            calcularTotal();
         });
 
         // Remover produto
@@ -544,12 +550,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
-            
-            // Adicionar event listeners para o primeiro item
             document.querySelectorAll('.produto-item').forEach(function(item) {
                 adicionarEventListeners(item);
             });
+            calcularTotal();
         });
     </script>
-</body>
-</html> 
+    <pre>
+
+</pre>
+</body></html>

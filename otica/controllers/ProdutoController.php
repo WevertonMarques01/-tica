@@ -2,44 +2,44 @@
 /**
  * Controller Produto - Gerenciamento de produtos
  */
-class ProdutoController extends Controller
+require_once __DIR__ . '/../models/Produto.php';
+
+class ProdutoController
 {
     private $produtoModel;
     
     public function __construct()
     {
-        parent::__construct();
-        $this->produtoModel = $this->loadModel('Produto');
+        $this->produtoModel = new Produto();
     }
     
     /**
      * Lista todos os produtos
      */
-    public function indexAction()
+    public function index()
     {
-        $produtos = $this->produtoModel->getAll();
+        $produtos = $this->produtoModel->getAllWithDetails();
         
-        $data = [
-            'title' => 'Gerenciar Produtos',
-            'produtos' => $produtos
-        ];
-        
-        $this->render('produtos/index', $data);
+        // Incluir a view
+        include __DIR__ . '/../views/produtos/index.php';
     }
     
     /**
      * Exibe formulário para criar produto
      */
-    public function novoAction()
+    public function novo()
     {
-        if ($this->isPost()) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $produtoData = [
-                'nome' => $this->getPost('nome'),
-                'codigo' => $this->getPost('codigo'),
-                'descricao' => $this->getPost('descricao'),
-                'preco' => $this->getPost('preco'),
-                'estoque' => $this->getPost('estoque'),
-                'categoria' => $this->getPost('categoria')
+                'nome' => $_POST['nome'] ?? '',
+                'codigo' => $_POST['codigo'] ?? '',
+                'descricao' => $_POST['descricao'] ?? '',
+                'preco' => $_POST['preco'] ?? 0,
+                'estoque' => $_POST['estoque'] ?? 0,
+                'tipo' => $_POST['tipo'] ?? '',
+                'marca' => $_POST['marca'] ?? '',
+                'modelo' => $_POST['modelo'] ?? '',
+                'cor' => $_POST['cor'] ?? ''
             ];
             
             // Validar dados
@@ -47,47 +47,45 @@ class ProdutoController extends Controller
             
             if (empty($errors)) {
                 if ($this->produtoModel->create($produtoData)) {
-                    $this->redirect('produtos');
+                    header('Location: index.php');
+                    exit;
                 } else {
-                    $data = [
-                        'title' => 'Novo Produto',
-                        'error' => 'Erro ao criar produto',
-                        'produto' => $produtoData
-                    ];
-                    $this->render('produtos/novo', $data);
+                    $error = 'Erro ao criar produto';
                 }
-            } else {
-                $data = [
-                    'title' => 'Novo Produto',
-                    'errors' => $errors,
-                    'produto' => $produtoData
-                ];
-                $this->render('produtos/novo', $data);
             }
         } else {
-            $data = [
-                'title' => 'Novo Produto'
-            ];
-            $this->render('produtos/novo', $data);
+            $errors = [];
+            $produtoData = [];
         }
+        
+        // Incluir a view
+        include __DIR__ . '/../views/produtos/novo.php';
     }
     
     /**
      * Exibe formulário para editar produto
      */
-    public function editarAction()
+    public function editar()
     {
-        $id = $this->getGet('id');
+        $id = $_GET['id'] ?? null;
         
-        if ($this->isPost()) {
+        if (!$id) {
+            header('Location: index.php');
+            exit;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $produtoData = [
                 'id' => $id,
-                'nome' => $this->getPost('nome'),
-                'codigo' => $this->getPost('codigo'),
-                'descricao' => $this->getPost('descricao'),
-                'preco' => $this->getPost('preco'),
-                'estoque' => $this->getPost('estoque'),
-                'categoria' => $this->getPost('categoria')
+                'nome' => $_POST['nome'] ?? '',
+                'codigo' => $_POST['codigo'] ?? '',
+                'descricao' => $_POST['descricao'] ?? '',
+                'preco' => $_POST['preco'] ?? 0,
+                'estoque' => $_POST['estoque'] ?? 0,
+                'tipo' => $_POST['tipo'] ?? '',
+                'marca' => $_POST['marca'] ?? '',
+                'modelo' => $_POST['modelo'] ?? '',
+                'cor' => $_POST['cor'] ?? ''
             ];
             
             // Validar dados
@@ -95,88 +93,82 @@ class ProdutoController extends Controller
             
             if (empty($errors)) {
                 if ($this->produtoModel->update($produtoData)) {
-                    $this->redirect('produtos');
+                    header('Location: index.php');
+                    exit;
                 } else {
-                    $data = [
-                        'title' => 'Editar Produto',
-                        'error' => 'Erro ao atualizar produto',
-                        'produto' => $produtoData
-                    ];
-                    $this->render('produtos/editar', $data);
+                    $error = 'Erro ao atualizar produto';
                 }
-            } else {
-                $data = [
-                    'title' => 'Editar Produto',
-                    'errors' => $errors,
-                    'produto' => $produtoData
-                ];
-                $this->render('produtos/editar', $data);
             }
         } else {
-            $produto = $this->produtoModel->getById($id);
-            
-            $data = [
-                'title' => 'Editar Produto',
-                'produto' => $produto
-            ];
-            $this->render('produtos/editar', $data);
+            $produtoData = $this->produtoModel->getById($id);
+            $errors = [];
         }
+        
+        // Incluir a view
+        include __DIR__ . '/../views/produtos/editar.php';
     }
     
     /**
      * Remove um produto
      */
-    public function excluirAction()
+    public function excluir()
     {
-        $id = $this->getGet('id');
+        $id = $_GET['id'] ?? null;
         
-        if ($this->produtoModel->delete($id)) {
-            $this->redirect('produtos');
+        if ($id && $this->produtoModel->delete($id)) {
+            header('Location: index.php');
+            exit;
         } else {
-            $this->redirect('produtos');
+            header('Location: index.php');
+            exit;
         }
     }
     
     /**
      * Busca produtos por nome (AJAX)
      */
-    public function buscarAction()
+    public function buscar()
     {
-        $nome = $this->getGet('nome');
+        $nome = $_GET['nome'] ?? '';
         $produtos = $this->produtoModel->searchByNome($nome);
         
-        $this->json($produtos);
+        header('Content-Type: application/json');
+        echo json_encode($produtos);
+        exit;
     }
     
     /**
-     * Lista produtos em estoque
+     * Verifica se código existe (AJAX)
      */
-    public function estoqueAction()
+    public function verificarCodigo()
     {
-        $produtos = $this->produtoModel->getEmEstoque();
+        $codigo = $_GET['codigo'] ?? '';
+        $excludeId = $_GET['exclude_id'] ?? null;
         
-        $data = [
-            'title' => 'Produtos em Estoque',
-            'produtos' => $produtos
-        ];
+        $exists = $this->produtoModel->codigoExists($codigo, $excludeId);
         
-        $this->render('produtos/estoque', $data);
+        header('Content-Type: application/json');
+        echo json_encode(['exists' => $exists]);
+        exit;
     }
     
     /**
      * Atualiza estoque do produto
      */
-    public function atualizarEstoqueAction()
+    public function atualizarEstoque()
     {
-        if ($this->isPost()) {
-            $id = $this->getPost('id');
-            $quantidade = $this->getPost('quantidade');
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'] ?? null;
+            $quantidade = $_POST['quantidade'] ?? 0;
             
-            if ($this->produtoModel->updateEstoque($id, $quantidade)) {
-                $this->json(['success' => true]);
+            if ($id && $this->produtoModel->updateEstoque($id, $quantidade)) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true]);
             } else {
-                $this->json(['success' => false, 'error' => 'Erro ao atualizar estoque']);
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'error' => 'Erro ao atualizar estoque']);
             }
+            exit;
         }
     }
 }

@@ -367,4 +367,7 @@ try {
         });
     </script>
 </body>
-</html> 
+</html>
+<pre>
+<?php print_r($produtos); ?>
+</pre>

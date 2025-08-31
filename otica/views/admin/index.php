@@ -6,28 +6,27 @@ require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
 
-// Buscar estatísticas reais
 try {
-    // Vendas de hoje
-    $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(total) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
+    // Vendas de hoje (use o campo correto de valor, geralmente valor_total)
+    $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(valor_total) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
     $stmt->execute();
     $vendasHoje = $stmt->fetch();
-    
-    // Novos clientes hoje
+
+    // Novos clientes hoje (confirme se o campo é criado_em)
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(criado_em) = CURDATE()");
     $stmt->execute();
     $novosClientes = $stmt->fetch();
-    
-    // Total de produtos em estoque
+
+    // Total de produtos diferentes em estoque (produtos com estoque > 0)
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0");
     $stmt->execute();
     $produtosEstoque = $stmt->fetch();
-    
-    // Receita do mês atual
-    $stmt = $db->prepare("SELECT SUM(total) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
+
+    // Receita do mês atual (use o campo correto de valor, geralmente valor_total)
+    $stmt = $db->prepare("SELECT SUM(valor_total) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
     $stmt->execute();
     $receitaMes = $stmt->fetch();
-    
+
     // Atividade recente (últimas 10 ações)
     $stmt = $db->prepare("
         SELECT l.acao, l.detalhes, l.data, u.nome as usuario 
@@ -38,7 +37,7 @@ try {
     ");
     $stmt->execute();
     $atividades = $stmt->fetchAll();
-    
+
 } catch (PDOException $e) {
     error_log("Erro ao buscar estatísticas: " . $e->getMessage());
     // Valores padrão em caso de erro
@@ -48,6 +47,13 @@ try {
     $receitaMes = ['valor' => 0];
     $atividades = [];
 }
+
+// Garantir valores padrão para evitar null
+$vendasHoje['total'] = $vendasHoje['total'] ?? 0;
+$vendasHoje['valor'] = $vendasHoje['valor'] ?? 0;
+$novosClientes['total'] = $novosClientes['total'] ?? 0;
+$produtosEstoque['total'] = $produtosEstoque['total'] ?? 0;
+$receitaMes['valor'] = $receitaMes['valor'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="light">
@@ -366,6 +372,30 @@ try {
             transform: rotate(180deg);
         }
 
+        /* Estilos para a barra de rolagem do sidebar */
+        .sidebar nav::-webkit-scrollbar {
+            width: 0px;
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-track {
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb {
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb:hover {
+            display: none;
+        }
+
+        /* Para Firefox */
+        .sidebar nav {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -386,15 +416,15 @@ try {
 <body class="bg-gray-50">
     <!-- Sidebar -->
     <div class="sidebar fixed left-0 top-0 h-full w-64 z-50">
-        <div class="p-6">
+        <div class="p-6 h-full flex flex-col">
             <!-- Logo -->
-            <div class="flex items-center mb-8">
+            <div class="flex items-center mb-8 flex-shrink-0">
                 <i class="fas fa-glasses text-3xl text-white mr-3"></i>
                 <h1 class="text-xl font-bold text-white">Wiz Admin</h1>
             </div>
 
             <!-- Menu Items -->
-            <nav class="space-y-2">
+            <nav class="space-y-2 flex-1 overflow-y-auto">
                 <a href="#" class="sidebar-item active flex items-center p-3 text-white">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
                     <span>Painel</span>
@@ -427,11 +457,22 @@ try {
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     <span>Financeiro</span>
                 </a>
+                <a href="../produtos/index.php" class="sidebar-item flex items-center p-3 text-white">
+                    <i class="fas fa-box w-5 mr-3"></i>
+                    <span>Produtos</span>
+                </a>
+                <a href="../produtos/novo.php" class="sidebar-item flex items-center p-3 text-white">
+                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                    <span>Novo Produto</span>
+                </a>
             </nav>
-
+            
             <!-- Logout Button -->
+
             <div class="absolute bottom-6 left-6 right-6">
                 <button onclick="showConfirmModal('Tem certeza que deseja sair?', function() { window.location.href = '../../controllers/LoginController.php?action=logout'; })" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
+            
+                
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     Sair
                 </button>
@@ -526,7 +567,7 @@ try {
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-white/90 text-sm font-medium">Receita Mensal</p>
-                        <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 0, ',', '.'); ?></p>
+                        <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 2, ',', '.'); ?></p>
                         <p class="text-white/80 text-sm mt-1">
                             Este mês
                         </p>
@@ -541,7 +582,7 @@ try {
         <!-- Charts and Recent Activity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sales Chart -->
-            <div class="lg:col-span-2 chart-container">
+            <div class="lg:col-span-2 chart-container rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Vendas dos Últimos 7 Dias</h3>
                 <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-600">
                     <div class="text-center">
@@ -552,7 +593,7 @@ try {
             </div>
 
             <!-- Recent Activity -->
-            <div class="chart-container">
+            <div class="chart-container rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Atividade Recente</h3>
                 <div class="recent-activity">
                     <?php if (empty($atividades)): ?>
@@ -594,10 +635,10 @@ try {
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
-                <a href="../receitas/nova.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
-                    <i class="fas fa-eye text-3xl text-otica-indigo mb-3 icon"></i>
-                    <h4 class="font-semibold">Nova Receita</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar receita</p>
+                <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+                    <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
+                    <h4 class="font-semibold">Novo Produto</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>
                 </a>
 
                 <a href="../financeiro/relatorio.php" class="card quick-action-card p-6 text-center hover:bg-otica-emerald hover:text-white transition-all duration-300">

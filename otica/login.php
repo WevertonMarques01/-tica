@@ -13,7 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             require_once 'config/database.php';
             $db = Database::getInstance()->getConnection();
             
+
             $stmt = $db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ? AND ativo = 1");
+
+            $stmt = $db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ?");
             $stmt->execute([$email]);
             $usuario = $stmt->fetch();
             

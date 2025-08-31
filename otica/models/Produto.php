@@ -2,6 +2,8 @@
 /**
  * Model Produto - Gerenciamento de produtos
  */
+require_once __DIR__ . '/BaseModel.php';
+
 class Produto extends BaseModel
 {
     protected $table = 'produtos';
@@ -17,8 +19,15 @@ class Produto extends BaseModel
     public function create($data)
     {
         // Adicionar data de criação
-        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['criado_em'] = date('Y-m-d H:i:s');
         
+        // Buscar o ID da marca pelo nome
+        $stmtMarca = $this->db->prepare("SELECT id FROM marcas WHERE nome = ?");
+        $stmtMarca->execute([$data['marca']]);
+        $marcaRow = $stmtMarca->fetch();
+        $marca_id = $marcaRow ? $marcaRow['id'] : null;
+        $data['marca_id'] = $marca_id;
+
         return parent::create($data);
     }
     
@@ -27,9 +36,6 @@ class Produto extends BaseModel
      */
     public function update($data)
     {
-        // Adicionar data de atualização
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        
         return parent::update($data);
     }
     
@@ -38,7 +44,8 @@ class Produto extends BaseModel
      */
     public function getByCodigo($codigo)
     {
-        return $this->find(['codigo' => $codigo], null, 1);
+        $result = $this->find(['codigo' => $codigo], null, 1);
+        return !empty($result) ? $result[0] : null;
     }
     
     /**
@@ -97,6 +104,17 @@ class Produto extends BaseModel
     }
     
     /**
+     * Busca todos os produtos com informações completas
+     */
+    public function getAllWithDetails()
+    {
+        $sql = "SELECT * FROM {$this->table} ORDER BY nome";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    
+    /**
      * Valida dados do produto
      */
     public function validate($data, $excludeId = null)
@@ -116,8 +134,8 @@ class Produto extends BaseModel
         }
         
         // Validar preço
-        if (empty($data['preco']) || !is_numeric($data['preco'])) {
-            $errors['preco'] = 'Preço é obrigatório e deve ser numérico';
+        if (empty($data['preco_venda']) || !is_numeric($data['preco_venda'])) {
+            $errors['preco_venda'] = 'Preço de venda é obrigatório e deve ser numérico';
         }
         
         // Validar estoque
@@ -128,4 +146,13 @@ class Produto extends BaseModel
         return $errors;
     }
 }
-?> 
+$preco_venda = (float)($_POST['preco_venda'] ?? 0);
+public function getTotalEstoque(): int {
+    $sql = "SELECT COALESCE(SUM(estoque),0) FROM produtos";
+    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+}
+public function getTotalSkus(): int {
+    $sql = "SELECT COUNT(*) FROM produtos WHERE estoque > 0";
+    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+}
+?>

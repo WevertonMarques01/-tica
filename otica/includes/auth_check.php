@@ -14,7 +14,11 @@ if (!isset($_SESSION['usuario_id']) || empty($_SESSION['usuario_id'])) {
 }
 
 // Verificar se o usuário tem permissão de administrador (opcional)
-if (isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] != 'admin') {
+
+if (isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] != 'admin') 
+
+if (isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] !== 'admin') {
+
     // Redirecionar para uma página de acesso negado
     header('Location: ../../login.php?error=access_denied');
     exit;

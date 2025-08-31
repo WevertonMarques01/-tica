@@ -6,7 +6,57 @@ class Venda extends BaseModel
 {
     protected $table = 'vendas';
     
-    public function __construct()
+    public function __construct()<?php
+// Supondo que $pdo seja sua conexão PDO
+// Dados da venda vindos do formulário
+$clienteId      = $_POST['cliente_id'];
+$formaPagamento = $_POST['forma_pagamento'];
+$itens          = $_POST['itens']; 
+// Exemplo de $itens: [['produto_id'=>1,'qtd'=>2,'preco'=>10.50], ['produto_id'=>2,'qtd'=>1,'preco'=>5.00]]
+
+// 1. Calcula o total geral
+$totalGeral = 0;
+foreach ($itens as $item) {
+    $totalGeral += $item['qtd'] * $item['preco'];
+}
+
+try {
+    $pdo->beginTransaction();
+
+    // 2. Insere a venda
+    $stmt = $pdo->prepare("INSERT INTO vendas (cliente_id, forma_pagamento, total_geral, created_at) 
+                           VALUES (:cliente_id, :forma_pagamento, :total_geral, NOW())");
+    $stmt->execute([
+        ':cliente_id'     => $clienteId,
+        ':forma_pagamento'=> $formaPagamento,
+        ':total_geral'    => $totalGeral
+    ]);
+
+    // Pega o ID da venda inserida
+    $vendaId = $pdo->lastInsertId();
+
+    // 3. Insere os itens da venda
+    $stmtItem = $pdo->prepare("INSERT INTO itens_venda (venda_id, produto_id, qtd, preco) 
+                               VALUES (:venda_id, :produto_id, :qtd, :preco)");
+
+    foreach ($itens as $item) {
+        $stmtItem->execute([
+            ':venda_id'   => $vendaId,
+            ':produto_id' => $item['produto_id'],
+            ':qtd'        => $item['qtd'],
+            ':preco'      => $item['preco']
+        ]);
+    }
+
+    $pdo->commit();
+    echo "Venda registrada com sucesso!";
+
+} catch (Exception $e) {
+    $pdo->rollBack();
+    echo "Erro ao registrar venda: " . $e->getMessage();
+}
+
+
     {
         parent::__construct();
     }

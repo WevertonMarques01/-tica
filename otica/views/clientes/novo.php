@@ -27,14 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $stmt->execute([$nome, $documento, $email, $telefone, $endereco, $bairro, $numero]);
             
             if ($result) {
-                // Registrar log
-                $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
-                $logStmt->execute([$_SESSION['usuario_id'], 'cliente_criado', "Novo cliente criado: $nome"]);
-                
-                header('Location: index.php?success=1');
-                exit;
+                $success = true;
+                // Limpe os campos se desejar
             } else {
-                $erro = 'Erro ao salvar cliente.';
+                $errors['geral'] = 'Erro ao salvar cliente';
             }
         } catch (PDOException $e) {
             error_log("Erro ao salvar cliente: " . $e->getMessage());
@@ -214,6 +210,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php if (isset($erro)): ?>
                         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                             <i class="fas fa-exclamation-triangle mr-2"></i><?php echo htmlspecialchars($erro); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($success)): ?>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <span class="text-green-800 font-medium">Cliente cadastrado com sucesso!</span>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($errors['geral'])): ?>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <span class="text-red-800 font-medium"><?= htmlspecialchars($errors['geral']) ?></span>
                         </div>
                     <?php endif; ?>
 
