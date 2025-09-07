@@ -157,7 +157,7 @@ $produtos = $stmt->fetchAll();
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            R$ <?= number_format($produto['preco'], 2, ',', '.') ?>
+                                            R$ <?= number_format($produto['preco_venda'], 2, ',', '.') ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             <div class="flex space-x-2">
@@ -186,11 +186,11 @@ $produtos = $stmt->fetchAll();
     <select>
         <?php foreach ($produtos as $produto): ?>
             <option value="<?php echo $produto['id']; ?>" 
-                    data-preco="<?php echo $produto['preco']; ?>">
+                    data-preco="<?php echo $produto['preco_venda']; ?>">
                 <?php
                     // Exibe apenas nome e preço
                     echo htmlspecialchars($produto['nome']) .
-                         " | Preço: R$ " . number_format($produto['preco'], 2, ',', '.');
+                         " | Preco: R$ " . number_format($produto['preco_venda'], 2, ',', '.');
                 ?>
             </option>
         <?php endforeach; ?>
