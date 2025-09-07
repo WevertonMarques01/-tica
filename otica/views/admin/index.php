@@ -7,32 +7,32 @@ require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
 
 try {
-    // Vendas de hoje (use o campo correto de valor, geralmente valor_total)
-    $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(valor_total) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
+    // Vendas de hoje - usar campos corretos
+    $stmt = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
     $stmt->execute();
     $vendasHoje = $stmt->fetch();
 
-    // Novos clientes hoje (confirme se o campo é criado_em)
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(criado_em) = CURDATE()");
+    // Novos clientes hoje - usar 'created_at' ao invés de 'criado_em'
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(created_at) = CURDATE()");
     $stmt->execute();
     $novosClientes = $stmt->fetch();
 
-    // Total de produtos diferentes em estoque (produtos com estoque > 0)
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0");
+    // Total de produtos em estoque - usar 'estoque' e verificar se ativo
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0 AND ativo = 1");
     $stmt->execute();
     $produtosEstoque = $stmt->fetch();
 
-    // Receita do mês atual (use o campo correto de valor, geralmente valor_total)
-    $stmt = $db->prepare("SELECT SUM(valor_total) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
+    // Receita do mês atual - adicionar COALESCE para evitar NULL
+    $stmt = $db->prepare("SELECT COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
     $stmt->execute();
     $receitaMes = $stmt->fetch();
 
-    // Atividade recente (últimas 10 ações)
+    // Atividade recente - usar tabela 'logs_sistema' e campo 'created_at'
     $stmt = $db->prepare("
-        SELECT l.acao, l.detalhes, l.data, u.nome as usuario 
-        FROM logs l 
+        SELECT l.acao, l.detalhes, l.created_at as data, u.nome as usuario 
+        FROM logs_sistema l 
         LEFT JOIN usuarios u ON l.usuario_id = u.id 
-        ORDER BY l.data DESC 
+        ORDER BY l.created_at DESC 
         LIMIT 10
     ");
     $stmt->execute();

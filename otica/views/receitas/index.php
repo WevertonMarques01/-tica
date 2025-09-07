@@ -279,12 +279,26 @@ try {
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900 dark:text-white">
-                                                <?php echo htmlspecialchars($receita['olho_direito'] ?? '-'); ?>
+                                                <?php 
+                                                $od_data = [];
+                                                if (!empty($receita['od_esfera'])) $od_data[] = "ESF: {$receita['od_esfera']}";
+                                                if (!empty($receita['od_cilindro'])) $od_data[] = "CIL: {$receita['od_cilindro']}";
+                                                if (!empty($receita['od_eixo'])) $od_data[] = "Eixo: {$receita['od_eixo']}";
+                                                if (!empty($receita['od_dnp'])) $od_data[] = "DNP: {$receita['od_dnp']}";
+                                                echo !empty($od_data) ? implode(' | ', $od_data) : '-';
+                                                ?>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900 dark:text-white">
-                                                <?php echo htmlspecialchars($receita['olho_esquerdo'] ?? '-'); ?>
+                                                <?php 
+                                                $oe_data = [];
+                                                if (!empty($receita['oe_esfera'])) $oe_data[] = "ESF: {$receita['oe_esfera']}";
+                                                if (!empty($receita['oe_cilindro'])) $oe_data[] = "CIL: {$receita['oe_cilindro']}";
+                                                if (!empty($receita['oe_eixo'])) $oe_data[] = "Eixo: {$receita['oe_eixo']}";
+                                                if (!empty($receita['oe_dnp'])) $oe_data[] = "DNP: {$receita['oe_dnp']}";
+                                                echo !empty($oe_data) ? implode(' | ', $oe_data) : '-';
+                                                ?>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -368,6 +382,3 @@ try {
     </script>
 </body>
 </html>
-<pre>
-<?php print_r($produtos); ?>
-</pre>

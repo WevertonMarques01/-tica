@@ -59,24 +59,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Inserir itens da venda
                 foreach ($produtos_data as $produto) {
                     if (!empty($produto['id']) && !empty($produto['quantidade'])) {
-                        $stmt = $db->prepare("
-                            INSERT INTO venda_itens (venda_id, produto_id, quantidade, preco_unitario) 
-                            VALUES (?, ?, ?, (SELECT preco_venda FROM produtos WHERE id = ?))
-                        ");
-                        $stmt->execute([$venda_id, $produto['id'], $produto['quantidade'], $produto['id']]);
+                        // Buscar preço do produto
+                        $stmt = $db->prepare("SELECT preco_venda FROM produtos WHERE id = ?");
+                        $stmt->execute([$produto['id']]);
+                        $produto_info = $stmt->fetch();
                         
-                        // Atualizar estoque
-                        $stmt = $db->prepare("
-                            UPDATE produtos SET estoque = estoque - ? WHERE id = ?
-                        ");
-                        $stmt->execute([$produto['quantidade'], $produto['id']]);
+                        if ($produto_info) {
+                            $preco_unitario = $produto_info['preco_venda'];
+                            $quantidade = (int)$produto['quantidade'];
+                            $subtotal = $preco_unitario * $quantidade;
+                            
+                            // Inserir item na tabela correta com todos os campos obrigatórios
+                            $stmt = $db->prepare("
+                                INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario, subtotal) 
+                                VALUES (?, ?, ?, ?, ?)
+                            ");
+                            $stmt->execute([$venda_id, $produto['id'], $quantidade, $preco_unitario, $subtotal]);
+                            
+                            // Nota: O estoque é atualizado automaticamente pelo trigger do banco
+                            // Se não houver trigger, descomente as linhas abaixo:
+                            // $stmt = $db->prepare("UPDATE produtos SET estoque_atual = estoque_atual - ? WHERE id = ?");
+                            // $stmt->execute([$quantidade, $produto['id']]);
+                        }
                     }
                 }
                 
                 $db->commit();
                 
-                // Registrar log
-                $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+                // Registrar log na tabela correta
+                $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
                 $logStmt->execute([$_SESSION['usuario_id'], 'venda_criada', "Nova venda criada ID: $venda_id"]);
                 
                 header('Location: historico.php?success=1');
