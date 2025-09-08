@@ -387,4 +387,11 @@ try {
         });
     </script>
 </body>
+<<<<<<< Updated upstream
 </html>
+=======
+</html>
+<pre>
+<?php print_r($produtos); ?>
+</pre>
+>>>>>>> Stashed changes

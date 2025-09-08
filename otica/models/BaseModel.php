@@ -2,8 +2,11 @@
 /**
  * Classe Base para todos os modelos
  */
+<<<<<<< Updated upstream
 require_once __DIR__ . '/../config/database.php';
 
+=======
+>>>>>>> Stashed changes
 class BaseModel
 {
     protected $db;

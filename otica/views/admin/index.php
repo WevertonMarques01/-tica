@@ -7,6 +7,7 @@ require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
 
 try {
+<<<<<<< Updated upstream
     // Vendas de hoje - usar campos corretos
     $stmt = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
     $stmt->execute();
@@ -28,6 +29,29 @@ try {
     $receitaMes = $stmt->fetch();
 
     // Atividade recente - usar tabela 'logs_sistema' e campo 'created_at'
+=======
+    // Vendas de hoje (use o campo correto de valor, geralmente valor_total)
+    $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(valor_total) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
+    $stmt->execute();
+    $vendasHoje = $stmt->fetch();
+
+    // Novos clientes hoje (confirme se o campo é criado_em)
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(criado_em) = CURDATE()");
+    $stmt->execute();
+    $novosClientes = $stmt->fetch();
+
+    // Total de produtos diferentes em estoque (produtos com estoque > 0)
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0");
+    $stmt->execute();
+    $produtosEstoque = $stmt->fetch();
+
+    // Receita do mês atual (use o campo correto de valor, geralmente valor_total)
+    $stmt = $db->prepare("SELECT SUM(valor_total) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
+    $stmt->execute();
+    $receitaMes = $stmt->fetch();
+
+    // Atividade recente (últimas 10 ações)
+>>>>>>> Stashed changes
     $stmt = $db->prepare("
         SELECT l.acao, l.detalhes, l.created_at as data, u.nome as usuario 
         FROM logs_sistema l 
@@ -468,11 +492,16 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
             </nav>
             
             <!-- Logout Button -->
+<<<<<<< Updated upstream
 
             <div class="absolute bottom-6 left-6 right-6">
                 <button onclick="showConfirmModal('Tem certeza que deseja sair?', function() { window.location.href = '../../controllers/LoginController.php?action=logout'; })" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
             
                 
+=======
+            <div class="mt-6 pt-6 border-t border-gray-600 flex-shrink-0">
+                <button onclick="logout()" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
+>>>>>>> Stashed changes
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     Sair
                 </button>
@@ -635,7 +664,11 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
+<<<<<<< Updated upstream
                 <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+=======
+                <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+>>>>>>> Stashed changes
                     <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
                     <h4 class="font-semibold">Novo Produto</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>

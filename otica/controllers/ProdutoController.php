@@ -113,9 +113,19 @@ class ProdutoController
      */
     public function excluir()
     {
+<<<<<<< Updated upstream
         // Verificar se foi passado um ID
         if (!isset($_GET['id']) || empty($_GET['id'])) {
             header('Location: produtos.php?error=id_invalido');
+=======
+        $id = $_GET['id'] ?? null;
+        
+        if ($id && $this->produtoModel->delete($id)) {
+            header('Location: index.php');
+            exit;
+        } else {
+            header('Location: index.php');
+>>>>>>> Stashed changes
             exit;
         }
 

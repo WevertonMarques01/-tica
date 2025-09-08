@@ -1,5 +1,8 @@
 <?php
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
@@ -37,7 +40,11 @@ $produtos = $stmt->fetchAll();
                             <i class="fas fa-plus mr-2"></i>
                             Novo Produto
                         </a>
+<<<<<<< Updated upstream
                         <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
+=======
+                        <a href="../views/admin/index.php" class="text-gray-600 hover:text-gray-900">
+>>>>>>> Stashed changes
                             <i class="fas fa-arrow-left mr-1"></i>
                             Voltar
                         </a>
@@ -48,6 +55,7 @@ $produtos = $stmt->fetchAll();
 
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<<<<<<< Updated upstream
             <!-- Feedback Messages -->
             <?php if (isset($_GET['success'])): ?>
                 <?php if ($_GET['success'] == 'excluido'): ?>
@@ -86,6 +94,8 @@ $produtos = $stmt->fetchAll();
                     </div>
                 </div>
             <?php endif; ?>
+=======
+>>>>>>> Stashed changes
             <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-lg shadow p-6">
@@ -108,10 +118,14 @@ $produtos = $stmt->fetchAll();
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Em Estoque</p>
                             <p class="text-2xl font-bold text-gray-900">
+<<<<<<< Updated upstream
                                 <?= count(array_filter($produtos, function($p) { 
                                     $estoque = $p['estoque'] ?? $p['estoque_atual'] ?? 0;
                                     return $estoque > 0; 
                                 })) ?>
+=======
+                                <?= count(array_filter($produtos, function($p) { return $p['estoque'] > 0; })) ?>
+>>>>>>> Stashed changes
                             </p>
                         </div>
                     </div>
@@ -125,10 +139,14 @@ $produtos = $stmt->fetchAll();
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-600">Sem Estoque</p>
                             <p class="text-2xl font-bold text-gray-900">
+<<<<<<< Updated upstream
                                 <?= count(array_filter($produtos, function($p) { 
                                     $estoque = $p['estoque'] ?? $p['estoque_atual'] ?? 0;
                                     return $estoque <= 0; 
                                 })) ?>
+=======
+                                <?= count(array_filter($produtos, function($p) { return $p['estoque'] <= 0; })) ?>
+>>>>>>> Stashed changes
                             </p>
                         </div>
                     </div>
@@ -196,6 +214,7 @@ $produtos = $stmt->fetchAll();
                                             <?= htmlspecialchars($produto['tipo'] ?? 'Sem tipo') ?>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
+<<<<<<< Updated upstream
                                             <?php 
                                             $estoque = $produto['estoque'] ?? $produto['estoque_atual'] ?? 0;
                                             ?>
@@ -219,6 +238,24 @@ $produtos = $stmt->fetchAll();
                                                 </a>
                                                 <a href="../../produtos.php?action=excluir&id=<?= $produto['id'] ?>" 
                                                    class="text-red-600 hover:text-red-900" title="Excluir"
+=======
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                                <?= $produto['estoque'] > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
+                                                <?= $produto['estoque'] ?>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            R$ <?= number_format($produto['preco'], 2, ',', '.') ?>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex space-x-2">
+                                                <a href="../produtos.php?action=editar&id=<?= $produto['id'] ?>" 
+                                                   class="text-blue-600 hover:text-blue-900">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="../produtos.php?action=excluir&id=<?= $produto['id'] ?>" 
+                                                   class="text-red-600 hover:text-red-900"
+>>>>>>> Stashed changes
                                                    onclick="return confirm('Tem certeza que deseja excluir este produto?')">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
@@ -238,11 +275,19 @@ $produtos = $stmt->fetchAll();
     <select>
         <?php foreach ($produtos as $produto): ?>
             <option value="<?php echo $produto['id']; ?>" 
+<<<<<<< Updated upstream
                     data-preco="<?php echo $produto['preco_venda']; ?>">
                 <?php
                     // Exibe apenas nome e preço
                     echo htmlspecialchars($produto['nome']) .
                          " | Preco: R$ " . number_format($produto['preco_venda'], 2, ',', '.');
+=======
+                    data-preco="<?php echo $produto['preco']; ?>">
+                <?php
+                    // Exibe apenas nome e preço
+                    echo htmlspecialchars($produto['nome']) .
+                         " | Preço: R$ " . number_format($produto['preco'], 2, ',', '.');
+>>>>>>> Stashed changes
                 ?>
             </option>
         <?php endforeach; ?>

@@ -59,10 +59,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Inserir itens da venda
                 foreach ($produtos_data as $produto) {
                     if (!empty($produto['id']) && !empty($produto['quantidade'])) {
+<<<<<<< Updated upstream
                         // Buscar preço do produto
                         $stmt = $db->prepare("SELECT preco_venda FROM produtos WHERE id = ?");
                         $stmt->execute([$produto['id']]);
                         $produto_info = $stmt->fetch();
+=======
+                        $stmt = $db->prepare("
+                            INSERT INTO venda_itens (venda_id, produto_id, quantidade, preco_unitario) 
+                            VALUES (?, ?, ?, (SELECT preco_venda FROM produtos WHERE id = ?))
+                        ");
+                        $stmt->execute([$venda_id, $produto['id'], $produto['quantidade'], $produto['id']]);
+>>>>>>> Stashed changes
                         
                         if ($produto_info) {
                             $preco_unitario = $produto_info['preco_venda'];

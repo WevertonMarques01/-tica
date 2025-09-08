@@ -128,6 +128,17 @@ class Produto extends BaseModel
     }
     
     /**
+     * Busca todos os produtos com informações completas
+     */
+    public function getAllWithDetails()
+    {
+        $sql = "SELECT * FROM {$this->table} ORDER BY nome";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+    
+    /**
      * Valida dados do produto
      */
     public function validate($data, $excludeId = null)
@@ -176,4 +187,8 @@ class Produto extends BaseModel
         return (int)($this->db->query($sql)->fetchColumn() ?? 0);
     }
 }
+<<<<<<< Updated upstream
+=======
+$preco_venda = (float)($_POST['preco_venda'] ?? 0);
+>>>>>>> Stashed changes
 ?>
