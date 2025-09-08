@@ -457,7 +457,7 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     <span>Financeiro</span>
                 </a>
-                <a href="../produtos/index_new.php" class="sidebar-item flex items-center p-3 text-white">
+                <a href="../produtos/index.php" class="sidebar-item flex items-center p-3 text-white">
                     <i class="fas fa-box w-5 mr-3"></i>
                     <span>Produtos</span>
                 </a>
