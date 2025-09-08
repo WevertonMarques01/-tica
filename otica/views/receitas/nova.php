@@ -18,38 +18,46 @@ try {
 
 // Processar formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Inicializar variáveis
+    $success = false;
+    $erro = '';
+    $errors = [];
+    
+    // Log para debug
+    error_log("POST data received: " . print_r($_POST, true));
+    
     $cliente_id = $_POST['cliente_id'] ?? '';
     $indicacao = $_POST['indicacao'] ?? '';
-    $nome = $_POST['nome'] ?? '';
-    $endereco = $_POST['endereco'] ?? '';
-    $bairro = $_POST['bairro'] ?? '';
-    $numero = $_POST['numero'] ?? '';
-    $cpf = $_POST['cpf'] ?? '';
-    $telefone = $_POST['telefone'] ?? '';
+    $nome_paciente = $_POST['nome'] ?? '';
+    $endereco_paciente = $_POST['endereco'] ?? '';
+    $bairro_paciente = $_POST['bairro'] ?? '';
+    $numero_paciente = $_POST['numero'] ?? '';
+    $cpf_paciente = $_POST['cpf'] ?? '';
+    $telefone_paciente = $_POST['telefone'] ?? '';
     
     // Dados do fiador
     $fiador_nome = $_POST['fiador_nome'] ?? '';
     $fiador_endereco = $_POST['fiador_endereco'] ?? '';
     $fiador_cpf = $_POST['fiador_cpf'] ?? '';
     
-    // Dados da receita
-    $od_esf = $_POST['od_esf'] ?? '';
-    $od_cil = $_POST['od_cil'] ?? '';
-    $od_eixo = $_POST['od_eixo'] ?? '';
-    $od_dnp = $_POST['od_dnp'] ?? '';
+    // Dados da receita - usar nomes corretos do banco
+    $od_esfera = $_POST['od_esf'] ?? null;
+    $od_cilindro = $_POST['od_cil'] ?? null;
+    $od_eixo = $_POST['od_eixo'] ?? null;
+    $od_dnp = $_POST['od_dnp'] ?? null;
     
-    $oe_esf = $_POST['oe_esf'] ?? '';
-    $oe_cil = $_POST['oe_cil'] ?? '';
-    $oe_eixo = $_POST['oe_eixo'] ?? '';
-    $oe_dnp = $_POST['oe_dnp'] ?? '';
+    $oe_esfera = $_POST['oe_esf'] ?? null;
+    $oe_cilindro = $_POST['oe_cil'] ?? null;
+    $oe_eixo = $_POST['oe_eixo'] ?? null;
+    $oe_dnp = $_POST['oe_dnp'] ?? null;
     
-    $adicao = $_POST['adicao'] ?? '';
-    $co = $_POST['co'] ?? '';
+    $adicao = $_POST['adicao'] ?? null;
+    $distancia_pupilar = $_POST['co'] ?? null; // C.O = Centro Óptico/Distância Pupilar
     
     // Armações (múltipla seleção)
     $armacoes = $_POST['armacoes'] ?? [];
     
-    // Lentes (múltipla seleção)
+    // Lentes (múltipla seleção) - Note: this field doesn't exist in form, keeping for compatibility
     $lentes = $_POST['lentes'] ?? [];
     
     // Marca da lente
@@ -61,52 +69,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $observacoes = $_POST['observacoes'] ?? '';
     $data_receita = $_POST['data_receita'] ?? date('Y-m-d');
     
-    if (empty($cliente_id)) {
+    // Verificar se o usuário está logado
+    if (!isset($_SESSION['usuario_id']) || empty($_SESSION['usuario_id'])) {
+        $erro = 'Sessão inválida. Faça login novamente.';
+    } elseif (empty($cliente_id)) {
         $erro = 'Selecione um cliente.';
     } else {
         try {
+            // Usar nomes corretos das colunas do banco
             $stmt = $db->prepare("
                 INSERT INTO receitas (
-                    cliente_id, usuario_id, indicacao, nome_paciente, endereco_paciente, bairro_paciente, numero_paciente, cpf_paciente, telefone_paciente,
+                    cliente_id, usuario_id, indicacao, nome_paciente, endereco_paciente, 
+                    bairro_paciente, numero_paciente, cpf_paciente, telefone_paciente,
                     fiador_nome, fiador_endereco, fiador_cpf,
                     od_esfera, od_cilindro, od_eixo, od_dnp,
                     oe_esfera, oe_cilindro, oe_eixo, oe_dnp,
-                    adicao, distancia_pupilar, armacoes_selecionadas, lentes_selecionadas, marca_lente, tipos_lentes,
-                    observacoes, data_receita, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    adicao, distancia_pupilar, armacoes_selecionadas, lentes_selecionadas, 
+                    marca_lente, tipos_lentes, observacoes, data_receita
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
+            // Converter arrays para JSON
             $armacoes_json = json_encode($armacoes);
             $lentes_json = json_encode($lentes);
             $tipos_lentes_json = json_encode($tipos_lentes);
             
+            // Converter valores vazios para NULL para campos decimais
+            $od_esfera = empty($od_esfera) ? null : floatval($od_esfera);
+            $od_cilindro = empty($od_cilindro) ? null : floatval($od_cilindro);
+            $od_eixo = empty($od_eixo) ? null : intval($od_eixo);
+            $od_dnp = empty($od_dnp) ? null : floatval($od_dnp);
+            
+            $oe_esfera = empty($oe_esfera) ? null : floatval($oe_esfera);
+            $oe_cilindro = empty($oe_cilindro) ? null : floatval($oe_cilindro);
+            $oe_eixo = empty($oe_eixo) ? null : intval($oe_eixo);
+            $oe_dnp = empty($oe_dnp) ? null : floatval($oe_dnp);
+            
+            $adicao = empty($adicao) ? null : floatval($adicao);
+            $distancia_pupilar = empty($distancia_pupilar) ? null : floatval($distancia_pupilar);
+            
             $result = $stmt->execute([
-                $cliente_id, $_SESSION['usuario_id'], $indicacao, $nome, $endereco, $bairro, $numero, $cpf, $telefone,
+                $cliente_id, $_SESSION['usuario_id'], $indicacao, $nome_paciente, $endereco_paciente,
+                $bairro_paciente, $numero_paciente, $cpf_paciente, $telefone_paciente,
                 $fiador_nome, $fiador_endereco, $fiador_cpf,
-                $od_esf, $od_cil, $od_eixo, $od_dnp,
-                $oe_esf, $oe_cil, $oe_eixo, $oe_dnp,
-                $adicao, $co, $armacoes_json, $lentes_json, $marca_lente, $tipos_lentes_json,
-                $observacoes, $data_receita, 'ativa'
+                $od_esfera, $od_cilindro, $od_eixo, $od_dnp,
+                $oe_esfera, $oe_cilindro, $oe_eixo, $oe_dnp,
+                $adicao, $distancia_pupilar, $armacoes_json, $lentes_json, 
+                $marca_lente, $tipos_lentes_json, $observacoes, $data_receita
             ]);
             
             if ($result) {
+                $receita_id = $db->lastInsertId();
+                $success = true;
+                error_log("Receita cadastrada com sucesso. ID: " . $receita_id);
+                
                 // Registrar log
                 try {
                     $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
                     $logStmt->execute([$_SESSION['usuario_id'], 'receita_criada', "Nova receita criada para cliente ID: $cliente_id"]);
-                } catch (Exception $e) {
-                    error_log("Erro ao registrar log: " . $e->getMessage());
+                } catch (Exception $logError) {
+                    error_log("Erro ao registrar log: " . $logError->getMessage());
                 }
                 
-                header('Location: index.php?success=receita_criada');
-                exit;
+                // Limpar campos após sucesso
+                $_POST = [];
+                
+                // Redirecionar após 2 segundos para mostrar mensagem de sucesso
+                header("refresh:2;url=index.php?success=1");
             } else {
-                $erro = 'Erro ao salvar ficha de óculos.';
+                $erro = 'Erro ao salvar receita no banco de dados.';
+                error_log("Erro no execute: " . print_r($stmt->errorInfo(), true));
             }
         } catch (PDOException $e) {
-            error_log("Erro ao salvar ficha de óculos: " . $e->getMessage());
-            error_log("Dados enviados: " . print_r($_POST, true));
+            error_log("Erro PDO ao salvar receita: " . $e->getMessage());
             $erro = 'Erro interno do sistema: ' . $e->getMessage();
+        } catch (Exception $e) {
+            error_log("Erro geral ao salvar receita: " . $e->getMessage());
+            $erro = 'Erro inesperado: ' . $e->getMessage();
         }
     }
 }
@@ -120,7 +159,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -288,10 +326,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">Dados da Ficha de Óculos</h2>
                 </div>
                 
-                <form method="POST" class="p-6 space-y-6">
-                    <?php if (isset($erro)): ?>
+                <form method="POST" class="p-6 space-y-6" id="receitaForm">
+                    <?php if (isset($erro) && !empty($erro)): ?>
                         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
-                            <?php echo htmlspecialchars($erro); ?>
+                            <i class="fas fa-exclamation-triangle mr-2"></i><?php echo htmlspecialchars($erro); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($success) && $success): ?>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span class="text-green-800 font-medium">Receita cadastrada com sucesso!</span>
+                            </div>
+                            <div class="mt-2">
+                                <span class="text-green-700 text-sm">Redirecionando para lista de receitas...</span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($errors)): ?>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <?php foreach($errors as $error): ?>
+                                <div class="text-red-800 font-medium"><?= htmlspecialchars($error) ?></div>
+                            <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
 
@@ -653,9 +711,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Incluir utilitários de receita -->
-    <script src="../../assets/js/receita-utils.js"></script>
-    
     <script>
         // Theme management
         function toggleTheme() {
@@ -699,6 +754,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
+            
+            // Add form submission debugging
+            const form = document.getElementById('receitaForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submitted');
+                    
+                    // Basic validation
+                    const cliente_id = document.getElementById('cliente_id').value;
+                    
+                    if (!cliente_id) {
+                        e.preventDefault();
+                        alert('Selecione um cliente!');
+                        return false;
+                    }
+                    
+                    console.log('Form data:', {
+                        cliente_id: cliente_id,
+                        indicacao: document.getElementById('indicacao').value,
+                        nome: document.getElementById('nome').value,
+                        data_receita: document.getElementById('data_receita').value,
+                        od_esf: document.getElementById('od_esf').value,
+                        oe_esf: document.getElementById('oe_esf').value
+                    });
+                });
+            }
+            
+            // Auto-fill client data when client is selected
+            const clienteSelect = document.getElementById('cliente_id');
+            if (clienteSelect) {
+                clienteSelect.addEventListener('change', function() {
+                    console.log('Cliente selecionado:', this.value);
+                    // You can add AJAX call here to fetch client data if needed
+                });
+            }
         });
     </script>
 </body>

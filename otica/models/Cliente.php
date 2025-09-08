@@ -11,16 +11,13 @@ class Cliente extends BaseModel
         parent::__construct();
     }
     
-    /**
-     * Cria um novo cliente
-     */
-    public function create($data)
-    {
-        // Adicionar data de criação
-        $data['created_at'] = date('Y-m-d H:i:s');
-        
-        return parent::create($data);
-    }
+    public function getNovosClientesHoje(): int {
+    $sql = "SELECT COUNT(*) AS qtd 
+            FROM clientes 
+            WHERE DATE(data_cadastro) = CURDATE()";
+    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+}
+
     
     /**
      * Atualiza um cliente

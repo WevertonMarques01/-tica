@@ -31,7 +31,7 @@ try {
     
     if ($result) {
         // Registrar log
-        $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+        $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
         $logStmt->execute([$_SESSION['usuario_id'], 'receita_excluida', "Receita ID: $id excluída"]);
         
         header('Location: index.php?success=excluida');

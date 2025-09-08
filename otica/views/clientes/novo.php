@@ -6,44 +6,60 @@ require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
 
+// Inicializar variáveis
+$success = false;
+$erro = '';
+$errors = [];
+
 // Processar formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'] ?? '';
-    $documento = $_POST['documento'] ?? '';
-    $email = $_POST['email'] ?? '';
-    $telefone = $_POST['telefone'] ?? '';
-    $endereco = $_POST['endereco'] ?? '';
-    $bairro = $_POST['bairro'] ?? '';
-    $numero = $_POST['numero'] ?? '';
+    // Log para debug
+    error_log("POST data received: " . print_r($_POST, true));
+    
+    $nome = trim($_POST['nome'] ?? '');
+    $documento = trim($_POST['documento'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $telefone = trim($_POST['telefone'] ?? '');
+    $endereco = trim($_POST['endereco'] ?? '');
+    $bairro = trim($_POST['bairro'] ?? '');
+    $numero = trim($_POST['numero'] ?? '');
 
+    // Validação
     if (empty($nome) || empty($documento)) {
         $erro = 'Nome e CPF/CNPJ são obrigatórios.';
     } else {
         try {
-            $stmt = $db->prepare("
-                INSERT INTO clientes (nome, documento, email, telefone, endereco, bairro, numero) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ");
-            $result = $stmt->execute([$nome, $documento, $email, $telefone, $endereco, $bairro, $numero]);
-            
-            if ($result) {
-                // Registrar log
-                try {
-                    $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
-                    $logStmt->execute([$_SESSION['usuario_id'], 'cliente_criado', "Novo cliente criado: $nome"]);
-                } catch (Exception $e) {
-                    error_log("Erro ao registrar log: " . $e->getMessage());
-                }
-                
-                header('Location: index.php?success=cliente_criado');
-                exit;
+            // Verificar se documento já existe
+            $stmt = $db->prepare("SELECT id FROM clientes WHERE documento = ?");
+            $stmt->execute([$documento]);
+            if ($stmt->fetch()) {
+                $erro = 'Este CPF/CNPJ já está cadastrado.';
             } else {
-                $erro = 'Erro ao salvar cliente.';
+                // Inserir cliente
+                $stmt = $db->prepare("
+                    INSERT INTO clientes (nome, documento, email, telefone, endereco, bairro, numero) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $result = $stmt->execute([$nome, $documento, $email, $telefone, $endereco, $bairro, $numero]);
+                
+                if ($result) {
+                    $client_id = $db->lastInsertId();
+                    $success = true;
+                    error_log("Cliente cadastrado com sucesso. ID: " . $client_id);
+                    
+                    // Limpar campos após sucesso
+                    $_POST = [];
+                } else {
+                    $errors['geral'] = 'Erro ao salvar cliente no banco de dados.';
+                    error_log("Erro no execute: " . print_r($stmt->errorInfo(), true));
+                }
             }
         } catch (PDOException $e) {
-            error_log("Erro ao salvar cliente: " . $e->getMessage());
-            error_log("Dados enviados: " . print_r($_POST, true));
+            error_log("Erro PDO ao salvar cliente: " . $e->getMessage());
             $erro = 'Erro interno do sistema: ' . $e->getMessage();
+        } catch (Exception $e) {
+            error_log("Erro geral ao salvar cliente: " . $e->getMessage());
+            $erro = 'Erro inesperado: ' . $e->getMessage();
         }
     }
 }
@@ -57,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -216,10 +231,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="text-lg font-medium text-gray-900 dark:text-white">Dados do Cliente</h2>
                 </div>
                 
-                <form method="POST" class="p-6 space-y-6">
-                    <?php if (isset($erro)): ?>
+                <form method="POST" class="p-6 space-y-6" id="clientForm">
+                    <!-- Debug Info (remove in production) -->
+                    <?php if (isset($_POST) && !empty($_POST)): ?>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <h4 class="text-blue-800 font-medium mb-2">Debug - Dados Recebidos:</h4>
+                            <pre class="text-xs text-blue-700"><?php echo htmlspecialchars(print_r($_POST, true)); ?></pre>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (isset($erro) && !empty($erro)): ?>
                         <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
                             <i class="fas fa-exclamation-triangle mr-2"></i><?php echo htmlspecialchars($erro); ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($success): ?>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                <span class="text-green-800 font-medium">Cliente cadastrado com sucesso!</span>
+                            </div>
+                            <div class="mt-2">
+                                <a href="index.php" class="text-green-700 hover:text-green-900 underline">
+                                    <i class="fas fa-arrow-left mr-1"></i>Voltar para lista de clientes
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($errors['geral'])): ?>
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                            <span class="text-red-800 font-medium"><?= htmlspecialchars($errors['geral']) ?></span>
                         </div>
                     <?php endif; ?>
 
@@ -372,6 +415,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             loadTheme();
+            
+            // Add form submission debugging
+            const form = document.getElementById('clientForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('Form submitted');
+                    
+                    // Basic validation
+                    const nome = document.getElementById('nome').value.trim();
+                    const documento = document.getElementById('documento').value.trim();
+                    
+                    if (!nome || !documento) {
+                        e.preventDefault();
+                        alert('Nome e CPF/CNPJ são obrigatórios!');
+                        return false;
+                    }
+                    
+                    console.log('Form data:', {
+                        nome: nome,
+                        documento: documento,
+                        email: document.getElementById('email').value,
+                        telefone: document.getElementById('telefone').value,
+                        endereco: document.getElementById('endereco').value,
+                        bairro: document.getElementById('bairro').value,
+                        numero: document.getElementById('numero').value
+                    });
+                });
+            }
         });
     </script>
 </body>

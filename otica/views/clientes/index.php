@@ -79,9 +79,19 @@ try {
         }
 
         .light .card {
-            background: white;
-            border: 1px solid #e2e8f0;
+            background: #e0f7fa;         /* Azul claro */
+            border: 1px solid #b2ebf2;   /* Azul mais escuro */
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .light .bg-blue-600 {
+            background-color: #00bcd4 !important; /* Azul vibrante */
+        }
+        .light .bg-green-600 {
+            background-color: #26c6da !important; /* Verde-água */
+        }
+        .light .bg-purple-600 {
+            background-color: #7c4dff !important; /* Roxo claro */
         }
 
         /* Dark Mode */
@@ -397,4 +407,4 @@ try {
         });
     </script>
 </body>
-</html> 
+</html>

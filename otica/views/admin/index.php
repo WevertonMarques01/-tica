@@ -6,29 +6,28 @@ require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
 
-// Buscar estatísticas reais
 try {
-    // Vendas de hoje
-    $stmt = $db->prepare("SELECT COUNT(*) as total, SUM(total) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
+    // Vendas de hoje - usar campos corretos
+    $stmt = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
     $stmt->execute();
     $vendasHoje = $stmt->fetch();
-    
-    // Novos clientes hoje
+
+    // Novos clientes hoje - usar 'created_at' ao invés de 'criado_em'
     $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(created_at) = CURDATE()");
     $stmt->execute();
     $novosClientes = $stmt->fetch();
-    
-    // Total de produtos em estoque
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0");
+
+    // Total de produtos em estoque - usar 'estoque' e verificar se ativo
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0 AND ativo = 1");
     $stmt->execute();
     $produtosEstoque = $stmt->fetch();
-    
-    // Receita do mês atual
-    $stmt = $db->prepare("SELECT SUM(total) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
+
+    // Receita do mês atual - adicionar COALESCE para evitar NULL
+    $stmt = $db->prepare("SELECT COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
     $stmt->execute();
     $receitaMes = $stmt->fetch();
-    
-    // Atividade recente (últimas 10 ações)
+
+    // Atividade recente - usar tabela 'logs_sistema' e campo 'created_at'
     $stmt = $db->prepare("
         SELECT l.acao, l.detalhes, l.created_at as data, u.nome as usuario 
         FROM logs_sistema l 
@@ -38,7 +37,7 @@ try {
     ");
     $stmt->execute();
     $atividades = $stmt->fetchAll();
-    
+
 } catch (PDOException $e) {
     error_log("Erro ao buscar estatísticas: " . $e->getMessage());
     // Valores padrão em caso de erro
@@ -48,6 +47,13 @@ try {
     $receitaMes = ['valor' => 0];
     $atividades = [];
 }
+
+// Garantir valores padrão para evitar null
+$vendasHoje['total'] = $vendasHoje['total'] ?? 0;
+$vendasHoje['valor'] = $vendasHoje['valor'] ?? 0;
+$novosClientes['total'] = $novosClientes['total'] ?? 0;
+$produtosEstoque['total'] = $produtosEstoque['total'] ?? 0;
+$receitaMes['valor'] = $receitaMes['valor'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR" class="light">
@@ -58,7 +64,6 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -367,6 +372,30 @@ try {
             transform: rotate(180deg);
         }
 
+        /* Estilos para a barra de rolagem do sidebar */
+        .sidebar nav::-webkit-scrollbar {
+            width: 0px;
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-track {
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb {
+            display: none;
+        }
+
+        .sidebar nav::-webkit-scrollbar-thumb:hover {
+            display: none;
+        }
+
+        /* Para Firefox */
+        .sidebar nav {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -387,15 +416,15 @@ try {
 <body class="bg-gray-50">
     <!-- Sidebar -->
     <div class="sidebar fixed left-0 top-0 h-full w-64 z-50">
-        <div class="p-6">
+        <div class="p-6 h-full flex flex-col">
             <!-- Logo -->
-            <div class="flex items-center mb-8">
+            <div class="flex items-center mb-8 flex-shrink-0">
                 <i class="fas fa-glasses text-3xl text-white mr-3"></i>
                 <h1 class="text-xl font-bold text-white">Wiz Admin</h1>
             </div>
 
             <!-- Menu Items -->
-            <nav class="space-y-2">
+            <nav class="space-y-2 flex-1 overflow-y-auto">
                 <a href="#" class="sidebar-item active flex items-center p-3 text-white">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
                     <span>Painel</span>
@@ -424,21 +453,26 @@ try {
                     <i class="fas fa-plus-circle w-5 mr-3"></i>
                     <span>Nova Receita</span>
                 </a>
-                <?php if (verificarSeDono()): ?>
                 <a href="../financeiro/relatorio.php" class="sidebar-item flex items-center p-3 text-white">
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     <span>Financeiro</span>
                 </a>
-                <?php endif; ?>
-                <a href="funcionarios.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-users-cog w-5 mr-3"></i>
-                    <span>Funcionários</span>
+                <a href="../produtos/index.php" class="sidebar-item flex items-center p-3 text-white">
+                    <i class="fas fa-box w-5 mr-3"></i>
+                    <span>Produtos</span>
+                </a>
+                <a href="../produtos/novo.php" class="sidebar-item flex items-center p-3 text-white">
+                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                    <span>Novo Produto</span>
                 </a>
             </nav>
-
+            
             <!-- Logout Button -->
+
             <div class="absolute bottom-6 left-6 right-6">
                 <button onclick="showConfirmModal('Tem certeza que deseja sair?', function() { window.location.href = '../../controllers/LoginController.php?action=logout'; })" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
+            
+                
                     <i class="fas fa-sign-out-alt mr-2"></i>
                     Sair
                 </button>
@@ -467,7 +501,12 @@ try {
                     <i class="fas fa-moon text-gray-600 dark:text-yellow-400" id="theme-icon"></i>
                 </button>
                 
-
+                <div class="relative">
+                    <button class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
+                        <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
                 <div class="flex items-center space-x-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
                     <div class="w-8 h-8 bg-otica-primary rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-white text-sm"></i>
@@ -528,7 +567,7 @@ try {
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-white/90 text-sm font-medium">Receita Mensal</p>
-                        <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 0, ',', '.'); ?></p>
+                        <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 2, ',', '.'); ?></p>
                         <p class="text-white/80 text-sm mt-1">
                             Este mês
                         </p>
@@ -543,9 +582,9 @@ try {
         <!-- Charts and Recent Activity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sales Chart -->
-            <div class="lg:col-span-2 chart-container card p-6">
+            <div class="lg:col-span-2 chart-container rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Vendas dos Últimos 7 Dias</h3>
-                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-200 dark:border-gray-600">
+                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-600">
                     <div class="text-center">
                         <i class="fas fa-chart-bar text-4xl text-gray-400 dark:text-gray-500 mb-2"></i>
                         <p class="text-gray-500 dark:text-gray-400">Gráfico de vendas será implementado</p>
@@ -554,7 +593,7 @@ try {
             </div>
 
             <!-- Recent Activity -->
-            <div class="chart-container card p-6">
+            <div class="chart-container rounded-lg">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Atividade Recente</h3>
                 <div class="recent-activity">
                     <?php if (empty($atividades)): ?>
@@ -596,19 +635,17 @@ try {
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
-                <a href="../receitas/nova.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
-                    <i class="fas fa-eye text-3xl text-otica-indigo mb-3 icon"></i>
-                    <h4 class="font-semibold">Nova Receita</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar receita</p>
+                <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+                    <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
+                    <h4 class="font-semibold">Novo Produto</h4>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>
                 </a>
 
-                <?php if (verificarSeDono()): ?>
                 <a href="../financeiro/relatorio.php" class="card quick-action-card p-6 text-center hover:bg-otica-emerald hover:text-white transition-all duration-300">
                     <i class="fas fa-chart-pie text-3xl text-otica-emerald mb-3 icon"></i>
                     <h4 class="font-semibold">Relatórios</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerar relatórios</p>
                 </a>
-                <?php endif; ?>
             </div>
         </div>
     </div>
