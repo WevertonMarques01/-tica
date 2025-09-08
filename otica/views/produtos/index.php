@@ -1,8 +1,12 @@
 <?php
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 
 =======
 >>>>>>> Stashed changes
+=======
+
+>>>>>>> 93b7f173bb88ccd61deb752171d76889a39e6c9d
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
@@ -40,11 +44,15 @@ $produtos = $stmt->fetchAll();
                             <i class="fas fa-plus mr-2"></i>
                             Novo Produto
                         </a>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                         <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
 =======
                         <a href="../views/admin/index.php" class="text-gray-600 hover:text-gray-900">
 >>>>>>> Stashed changes
+=======
+                        <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
+>>>>>>> 93b7f173bb88ccd61deb752171d76889a39e6c9d
                             <i class="fas fa-arrow-left mr-1"></i>
                             Voltar
                         </a>

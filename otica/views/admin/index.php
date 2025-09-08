@@ -664,11 +664,15 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                 <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
 =======
                 <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
 >>>>>>> Stashed changes
+=======
+                <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+>>>>>>> 93b7f173bb88ccd61deb752171d76889a39e6c9d
                     <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
                     <h4 class="font-semibold">Novo Produto</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>
