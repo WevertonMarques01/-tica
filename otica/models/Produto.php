@@ -85,7 +85,8 @@ class Produto extends BaseModel
      */
     public function getEmEstoque()
     {
-        $sql = "SELECT * FROM {$this->table} WHERE estoque > 0 ORDER BY nome";
+        // Use estoque_atual as per database schema, but support both field names
+        $sql = "SELECT * FROM {$this->table} WHERE COALESCE(estoque_atual, estoque, 0) > 0 ORDER BY nome";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -96,11 +97,23 @@ class Produto extends BaseModel
      */
     public function updateEstoque($id, $quantidade)
     {
-        $sql = "UPDATE {$this->table} SET estoque = estoque + :quantidade WHERE id = :id";
+        // Try estoque_atual first (primary field), fallback to estoque
+        $sql = "UPDATE {$this->table} SET estoque_atual = COALESCE(estoque_atual, 0) + :quantidade WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':quantidade', $quantidade, PDO::PARAM_INT);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        $result = $stmt->execute();
+        
+        // If no rows affected, try the estoque field
+        if (!$result || $stmt->rowCount() == 0) {
+            $sql = "UPDATE {$this->table} SET estoque = COALESCE(estoque, 0) + :quantidade WHERE id = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':quantidade', $quantidade, PDO::PARAM_INT);
+            $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+            $result = $stmt->execute();
+        }
+        
+        return $result;
     }
     
     /**
@@ -138,21 +151,29 @@ class Produto extends BaseModel
             $errors['preco_venda'] = 'Preço de venda é obrigatório e deve ser numérico';
         }
         
-        // Validar estoque
-        if (!isset($data['estoque']) || !is_numeric($data['estoque'])) {
+        // Validar estoque (support both estoque and estoque_atual)
+        $estoqueValue = $data['estoque'] ?? $data['estoque_atual'] ?? null;
+        if (!isset($estoqueValue) || !is_numeric($estoqueValue)) {
             $errors['estoque'] = 'Estoque é obrigatório e deve ser numérico';
         }
         
         return $errors;
     }
-}
-$preco_venda = (float)($_POST['preco_venda'] ?? 0);
-public function getTotalEstoque(): int {
-    $sql = "SELECT COALESCE(SUM(estoque),0) FROM produtos";
-    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
-}
-public function getTotalSkus(): int {
-    $sql = "SELECT COUNT(*) FROM produtos WHERE estoque > 0";
-    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+    
+    /**
+     * Retorna o total de estoque de todos os produtos
+     */
+    public function getTotalEstoque(): int {
+        $sql = "SELECT COALESCE(SUM(COALESCE(estoque_atual, estoque, 0)), 0) FROM produtos";
+        return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+    }
+    
+    /**
+     * Retorna o total de SKUs com estoque
+     */
+    public function getTotalSkus(): int {
+        $sql = "SELECT COUNT(*) FROM produtos WHERE COALESCE(estoque_atual, estoque, 0) > 0";
+        return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+    }
 }
 ?>
