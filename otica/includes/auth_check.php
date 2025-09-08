@@ -23,4 +23,29 @@ if (isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] !== 
     header('Location: ../../login.php?error=access_denied');
     exit;
 }
+
+/**
+ * Função para verificar se o usuário tem acesso ao financeiro
+ * Apenas o dono (admin) pode acessar
+ */
+function verificarAcessoFinanceiro() {
+    if (!isset($_SESSION['usuario_permissao']) || $_SESSION['usuario_permissao'] !== 'admin') {
+        header('Location: ../../login.php?error=financeiro_restrito');
+        exit;
+    }
+}
+
+/**
+ * Função para verificar se o usuário é dono (admin)
+ */
+function verificarSeDono() {
+    return isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] === 'admin';
+}
+
+/**
+ * Função para verificar se o usuário é funcionário
+ */
+function verificarSeFuncionario() {
+    return isset($_SESSION['usuario_permissao']) && $_SESSION['usuario_permissao'] !== 'admin';
+}
 ?>
