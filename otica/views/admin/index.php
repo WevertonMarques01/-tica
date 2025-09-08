@@ -457,7 +457,7 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     <span>Financeiro</span>
                 </a>
-                <a href="../produtos/index_new.php" class="sidebar-item flex items-center p-3 text-white">
+                <a href="../produtos/index.php" class="sidebar-item flex items-center p-3 text-white">
                     <i class="fas fa-box w-5 mr-3"></i>
                     <span>Produtos</span>
                 </a>
@@ -635,7 +635,7 @@ $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
                 </a>
 
-                <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
+                <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
                     <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
                     <h4 class="font-semibold">Novo Produto</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>
