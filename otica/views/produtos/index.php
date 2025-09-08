@@ -1,5 +1,5 @@
 <?php
-<?php
+
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
 
@@ -37,7 +37,7 @@ $produtos = $stmt->fetchAll();
                             <i class="fas fa-plus mr-2"></i>
                             Novo Produto
                         </a>
-                        <a href="../views/admin/index.php" class="text-gray-600 hover:text-gray-900">
+                        <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
                             <i class="fas fa-arrow-left mr-1"></i>
                             Voltar
                         </a>
