@@ -25,6 +25,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -194,8 +195,11 @@ try {
         <!-- Content -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <?php if (isset($_GET['success'])): ?>
-                <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded">
-                    <i class="fas fa-check-circle mr-2"></i>Cliente cadastrado com sucesso!
+                <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <span>Cliente cadastrado com sucesso!</span>
+                    </div>
                 </div>
             <?php endif; ?>
 

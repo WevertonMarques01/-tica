@@ -14,7 +14,7 @@ try {
     $vendasHoje = $stmt->fetch();
     
     // Novos clientes hoje
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(criado_em) = CURDATE()");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(created_at) = CURDATE()");
     $stmt->execute();
     $novosClientes = $stmt->fetch();
     
@@ -30,10 +30,10 @@ try {
     
     // Atividade recente (últimas 10 ações)
     $stmt = $db->prepare("
-        SELECT l.acao, l.detalhes, l.data, u.nome as usuario 
-        FROM logs l 
+        SELECT l.acao, l.detalhes, l.created_at as data, u.nome as usuario 
+        FROM logs_sistema l 
         LEFT JOIN usuarios u ON l.usuario_id = u.id 
-        ORDER BY l.data DESC 
+        ORDER BY l.created_at DESC 
         LIMIT 10
     ");
     $stmt->execute();
@@ -58,6 +58,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -423,9 +424,15 @@ try {
                     <i class="fas fa-plus-circle w-5 mr-3"></i>
                     <span>Nova Receita</span>
                 </a>
+                <?php if (verificarSeDono()): ?>
                 <a href="../financeiro/relatorio.php" class="sidebar-item flex items-center p-3 text-white">
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     <span>Financeiro</span>
+                </a>
+                <?php endif; ?>
+                <a href="funcionarios.php" class="sidebar-item flex items-center p-3 text-white">
+                    <i class="fas fa-users-cog w-5 mr-3"></i>
+                    <span>Funcionários</span>
                 </a>
             </nav>
 
@@ -460,12 +467,7 @@ try {
                     <i class="fas fa-moon text-gray-600 dark:text-yellow-400" id="theme-icon"></i>
                 </button>
                 
-                <div class="relative">
-                    <button class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
-                        <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-                    </button>
-                </div>
+
                 <div class="flex items-center space-x-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
                     <div class="w-8 h-8 bg-otica-primary rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-white text-sm"></i>
@@ -541,9 +543,9 @@ try {
         <!-- Charts and Recent Activity -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Sales Chart -->
-            <div class="lg:col-span-2 chart-container">
+            <div class="lg:col-span-2 chart-container card p-6">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Vendas dos Últimos 7 Dias</h3>
-                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-600">
+                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border-2 border-gray-200 dark:border-gray-600">
                     <div class="text-center">
                         <i class="fas fa-chart-bar text-4xl text-gray-400 dark:text-gray-500 mb-2"></i>
                         <p class="text-gray-500 dark:text-gray-400">Gráfico de vendas será implementado</p>
@@ -552,7 +554,7 @@ try {
             </div>
 
             <!-- Recent Activity -->
-            <div class="chart-container">
+            <div class="chart-container card p-6">
                 <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Atividade Recente</h3>
                 <div class="recent-activity">
                     <?php if (empty($atividades)): ?>
@@ -600,11 +602,13 @@ try {
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar receita</p>
                 </a>
 
+                <?php if (verificarSeDono()): ?>
                 <a href="../financeiro/relatorio.php" class="card quick-action-card p-6 text-center hover:bg-otica-emerald hover:text-white transition-all duration-300">
                     <i class="fas fa-chart-pie text-3xl text-otica-emerald mb-3 icon"></i>
                     <h4 class="font-semibold">Relatórios</h4>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerar relatórios</p>
                 </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>

@@ -28,17 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if ($result) {
                 // Registrar log
-                $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
-                $logStmt->execute([$_SESSION['usuario_id'], 'cliente_criado', "Novo cliente criado: $nome"]);
+                try {
+                    $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+                    $logStmt->execute([$_SESSION['usuario_id'], 'cliente_criado', "Novo cliente criado: $nome"]);
+                } catch (Exception $e) {
+                    error_log("Erro ao registrar log: " . $e->getMessage());
+                }
                 
-                header('Location: index.php?success=1');
+                header('Location: index.php?success=cliente_criado');
                 exit;
             } else {
                 $erro = 'Erro ao salvar cliente.';
             }
         } catch (PDOException $e) {
             error_log("Erro ao salvar cliente: " . $e->getMessage());
-            $erro = 'Erro interno do sistema.';
+            error_log("Dados enviados: " . print_r($_POST, true));
+            $erro = 'Erro interno do sistema: ' . $e->getMessage();
         }
     }
 }
@@ -52,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',

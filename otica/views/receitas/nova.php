@@ -67,12 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $db->prepare("
                 INSERT INTO receitas (
-                    cliente_id, indicacao, nome, endereco, bairro, numero, cpf, telefone,
+                    cliente_id, usuario_id, indicacao, nome_paciente, endereco_paciente, bairro_paciente, numero_paciente, cpf_paciente, telefone_paciente,
                     fiador_nome, fiador_endereco, fiador_cpf,
-                    od_esf, od_cil, od_eixo, od_dnp,
-                    oe_esf, oe_cil, oe_eixo, oe_dnp,
-                    adicao, co, armacoes, lentes, marca_lente, tipos_lentes,
-                    observacoes, data_receita
+                    od_esfera, od_cilindro, od_eixo, od_dnp,
+                    oe_esfera, oe_cilindro, oe_eixo, oe_dnp,
+                    adicao, distancia_pupilar, armacoes_selecionadas, lentes_selecionadas, marca_lente, tipos_lentes,
+                    observacoes, data_receita, status
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
@@ -81,27 +81,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $tipos_lentes_json = json_encode($tipos_lentes);
             
             $result = $stmt->execute([
-                $cliente_id, $indicacao, $nome, $endereco, $bairro, $numero, $cpf, $telefone,
+                $cliente_id, $_SESSION['usuario_id'], $indicacao, $nome, $endereco, $bairro, $numero, $cpf, $telefone,
                 $fiador_nome, $fiador_endereco, $fiador_cpf,
                 $od_esf, $od_cil, $od_eixo, $od_dnp,
                 $oe_esf, $oe_cil, $oe_eixo, $oe_dnp,
                 $adicao, $co, $armacoes_json, $lentes_json, $marca_lente, $tipos_lentes_json,
-                $observacoes, $data_receita
+                $observacoes, $data_receita, 'ativa'
             ]);
             
             if ($result) {
                 // Registrar log
-                $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
-                $logStmt->execute([$_SESSION['usuario_id'], 'ficha_oculos_criada', "Nova ficha de óculos criada para cliente ID: $cliente_id"]);
+                try {
+                    $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+                    $logStmt->execute([$_SESSION['usuario_id'], 'receita_criada', "Nova receita criada para cliente ID: $cliente_id"]);
+                } catch (Exception $e) {
+                    error_log("Erro ao registrar log: " . $e->getMessage());
+                }
                 
-                header('Location: index.php?success=1');
+                header('Location: index.php?success=receita_criada');
                 exit;
             } else {
                 $erro = 'Erro ao salvar ficha de óculos.';
             }
         } catch (PDOException $e) {
             error_log("Erro ao salvar ficha de óculos: " . $e->getMessage());
-            $erro = 'Erro interno do sistema.';
+            error_log("Dados enviados: " . print_r($_POST, true));
+            $erro = 'Erro interno do sistema: ' . $e->getMessage();
         }
     }
 }
@@ -115,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -647,6 +653,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
+    <!-- Incluir utilitários de receita -->
+    <script src="../../assets/js/receita-utils.js"></script>
+    
     <script>
         // Theme management
         function toggleTheme() {
