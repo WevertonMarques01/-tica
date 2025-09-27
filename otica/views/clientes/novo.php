@@ -29,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Nome e CPF/CNPJ são obrigatórios.';
     } else {
         try {
+<<<<<<< Updated upstream
             // Verificar se documento já existe
             $stmt = $db->prepare("SELECT id FROM clientes WHERE documento = ?");
             $stmt->execute([$documento]);
@@ -53,6 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors['geral'] = 'Erro ao salvar cliente no banco de dados.';
                     error_log("Erro no execute: " . print_r($stmt->errorInfo(), true));
                 }
+=======
+            $stmt = $db->prepare("
+                INSERT INTO clientes (nome, documento, email, telefone, endereco) 
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $result = $stmt->execute([$nome, $documento, $email, $telefone, $endereco]);
+            
+            if ($result) {
+                $success = true;
+                // Limpe os campos se desejar
+            } else {
+                $errors['geral'] = 'Erro ao salvar cliente';
+>>>>>>> Stashed changes
             }
         } catch (PDOException $e) {
             error_log("Erro PDO ao salvar cliente: " . $e->getMessage());
@@ -246,6 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
 
+<<<<<<< Updated upstream
                     <?php if ($success): ?>
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                             <div class="flex items-center">
@@ -257,6 +272,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <i class="fas fa-arrow-left mr-1"></i>Voltar para lista de clientes
                                 </a>
                             </div>
+=======
+                    <?php if (!empty($success)): ?>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                            <span class="text-green-800 font-medium">Cliente cadastrado com sucesso!</span>
+>>>>>>> Stashed changes
                         </div>
                     <?php endif; ?>
 

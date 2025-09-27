@@ -886,3 +886,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
 </body>
 </html>
+<pre>
+<?php print_r($produtos); ?>
+</pre>

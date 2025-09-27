@@ -241,10 +241,17 @@ try {
                                     <?php echo $item['quantidade']; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+<<<<<<< HEAD
                                     R$ <?php echo number_format($item['preco_venda'], 2, ',', '.'); ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                     R$ <?php echo number_format($item['quantidade'] * $item['preco'], 2, ',', '.'); ?>
+=======
+                                    R$ <?php echo number_format($item['preco_unitario'], 2, ',', '.'); ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    R$ <?php echo number_format($item['quantidade'] * $item['subtotal'], 2, ',', '.'); ?>
+>>>>>>> a40cc3c33f5ddb4520c325dc233fb28caee38e34
                                 </td>
                             </tr>
                             <?php endforeach; ?>

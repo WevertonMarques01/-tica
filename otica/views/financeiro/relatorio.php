@@ -2,6 +2,9 @@
 // Verificar autenticação
 require_once '../../includes/auth_check.php';
 
+// Verificar acesso ao financeiro (apenas dono)
+verificarAcessoFinanceiro();
+
 // Conectar ao banco de dados
 require_once '../../config/database.php';
 $db = Database::getInstance()->getConnection();
