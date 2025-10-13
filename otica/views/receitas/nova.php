@@ -16,6 +16,35 @@ try {
     $clientes = [];
 }
 
+// Se for uma requisição AJAX para buscar dados do cliente
+if (isset($_GET['action']) && $_GET['action'] === 'get_cliente' && isset($_GET['cliente_id'])) {
+    header('Content-Type: application/json');
+    
+    try {
+        $stmt = $db->prepare("SELECT nome, telefone, documento as cpf, email, endereco, bairro, numero FROM clientes WHERE id = ?");
+        $stmt->execute([$_GET['cliente_id']]);
+        $cliente = $stmt->fetch();
+        
+        if ($cliente) {
+            echo json_encode([
+                'success' => true,
+                'cliente' => $cliente
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Cliente não encontrado'
+            ]);
+        }
+    } catch (PDOException $e) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Erro ao buscar dados do cliente: ' . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
 // Processar formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Inicializar variáveis
@@ -366,6 +395,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <div id="loading-indicator" class="hidden mt-2 text-sm text-otica-primary">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>Carregando dados do cliente...
+                        </div>
                     </div>
 
                     <!-- Data da Receita -->
@@ -782,14 +814,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             // Auto-fill client data when client is selected
+            // Auto-fill client data when client is selected
             const clienteSelect = document.getElementById('cliente_id');
             if (clienteSelect) {
                 clienteSelect.addEventListener('change', function() {
-                    console.log('Cliente selecionado:', this.value);
-                    // You can add AJAX call here to fetch client data if needed
+                    const clienteId = this.value;
+                    console.log('Cliente selecionado:', clienteId);
+                    
+                    if (clienteId) {
+                        // Mostrar indicador de carregamento
+                        const loadingIndicator = document.getElementById('loading-indicator');
+                        const nomeField = document.getElementById('nome');
+                        const telefoneField = document.getElementById('telefone');
+                        const cpfField = document.getElementById('cpf');
+                        const enderecoField = document.getElementById('endereco');
+                        const bairroField = document.getElementById('bairro');
+                        const numeroField = document.getElementById('numero');
+                        
+                        // Mostrar carregamento
+                        loadingIndicator.classList.remove('hidden');
+                        
+                        // Limpar campos primeiro
+                        nomeField.value = '';
+                        telefoneField.value = '';
+                        cpfField.value = '';
+                        enderecoField.value = '';
+                        bairroField.value = '';
+                        numeroField.value = '';
+                        
+                        // Fazer requisição AJAX
+                        fetch(`nova.php?action=get_cliente&cliente_id=${clienteId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                // Esconder indicador de carregamento
+                                loadingIndicator.classList.add('hidden');
+                                
+                                if (data.success) {
+                                    // Preencher campos com dados do cliente
+                                    nomeField.value = data.cliente.nome || '';
+                                    telefoneField.value = data.cliente.telefone || '';
+                                    cpfField.value = data.cliente.cpf || '';
+                                    enderecoField.value = data.cliente.endereco || '';
+                                    bairroField.value = data.cliente.bairro || '';
+                                    numeroField.value = data.cliente.numero || '';
+                                    
+                                    console.log('Dados do cliente carregados:', data.cliente);
+                                } else {
+                                    console.error('Erro ao carregar cliente:', data.message);
+                                    alert('Erro ao carregar dados do cliente: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                // Esconder indicador de carregamento
+                                loadingIndicator.classList.add('hidden');
+                                
+                                console.error('Erro na requisição:', error);
+                                alert('Erro ao carregar dados do cliente. Verifique a conexão.');
+                            });
+                    } else {
+                        // Limpar campos se nenhum cliente for selecionado
+                        document.getElementById('nome').value = '';
+                        document.getElementById('telefone').value = '';
+                        document.getElementById('cpf').value = '';
+                        document.getElementById('endereco').value = '';
+                        document.getElementById('bairro').value = '';
+                        document.getElementById('numero').value = '';
+                    }
                 });
             }
         });
     </script>
 </body>
 </html>
+<pre>
+<?php print_r($produtos); ?>
+</pre>

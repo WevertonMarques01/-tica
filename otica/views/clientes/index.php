@@ -1,4 +1,5 @@
 <?php
+
 // Verificar autenticação
 require_once '../../includes/auth_check.php';
 
@@ -25,6 +26,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../../assets/js/notifications.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -204,9 +206,53 @@ try {
         <!-- Content -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <?php if (isset($_GET['success'])): ?>
-                <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded">
-                    <i class="fas fa-check-circle mr-2"></i>Cliente cadastrado com sucesso!
+                <?php if ($_GET['success'] == 'excluido'): ?>
+                    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Cliente excluído com sucesso!</span>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Cliente cadastrado com sucesso!</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['error'])): ?>
+                <?php 
+                $errorMessages = [
+                    'id_invalido' => 'ID do cliente inválido.',
+                    'cliente_nao_encontrado' => 'Cliente não encontrado.',
+                    'cliente_tem_vendas' => 'Não é possível excluir este cliente pois ele possui vendas associadas.',
+                    'cliente_tem_receitas' => 'Não é possível excluir este cliente pois ele possui receitas associadas.',
+                    'cliente_tem_ordens' => 'Não é possível excluir este cliente pois ele possui ordens de serviço associadas.',
+                    'erro_exclusao' => 'Erro ao excluir o cliente.',
+                    'erro_sistema' => 'Erro interno do sistema. Tente novamente.'
+                ];
+                $errorMessage = $errorMessages[$_GET['error']] ?? 'Erro desconhecido.';
+                ?>
+                <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span><?php echo $errorMessage; ?></span>
+                    </div>
                 </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['info'])): ?>
+                <?php if ($_GET['info'] == 'edicao_indisponivel'): ?>
+                    <div class="mb-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span>Funcionalidade de edição será implementada em breve. Por enquanto, use o formulário de novo cliente.</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if (!empty($clientes)): ?>
