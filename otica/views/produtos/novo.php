@@ -9,7 +9,6 @@ $success = false;
 $produto = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $codigo = trim($_POST['codigo_barras'] ?? '');
     $nome = trim($_POST['nome'] ?? '');
     $descricao = trim($_POST['descricao'] ?? '');
     $tipo = trim($_POST['tipo'] ?? '');
@@ -19,21 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $preco_venda = (float)($_POST['preco'] ?? 0);
     
     // Validações
-    if (empty($codigo)) {
-        $errors['codigo_barras'] = 'Código de barras é obrigatório';
-    } elseif (!preg_match('/^\d+$/', $codigo)) {
-        $errors['codigo_barras'] = 'Código deve conter apenas números';
-    } else {
-        // Verificar se código já existe
-        $stmt = $db->prepare("SELECT COUNT(*) as count FROM produtos WHERE codigo_barras = ?");
-        $stmt->execute([$codigo]);
-        $result = $stmt->fetch();
-
-        if ($result && $result['count'] > 0) {
-            $errors['codigo_barras'] = 'Este código de barras já está cadastrado';
-        }
-    }
-    
     if (empty($nome)) {
         $errors['nome'] = 'Nome do produto é obrigatório';
     }
@@ -50,18 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $stmt = $db->prepare("
-                INSERT INTO produtos (codigo_barras, nome, descricao, estoque, preco_venda) 
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO produtos (nome, descricao, estoque, preco_venda) 
+                VALUES (?, ?, ?, ?)
             ");
             
             $result = $stmt->execute([
-                $codigo, $nome, $descricao, $estoque, $preco_venda
+                $nome, $descricao, $estoque, $preco_venda
             ]);
             
             if ($result) {
                 $success = true;
                 $produto = [
-                    'codigo_barras' => $codigo,
                     'nome' => $nome,
                     'descricao' => $descricao,
                     'tipo' => $tipo,
@@ -72,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
                 
                 // Limpar formulário após sucesso
-                $codigo = $nome = $descricao = $tipo = $marca = $modelo = $cor = '';
+                $nome = $descricao = $tipo = $marca = $modelo = $cor = '';
                 $estoque = $preco = 0;
             } else {
                 $errors['geral'] = 'Erro ao salvar produto';
@@ -95,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .barcode-input:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
         .success-animation { animation: successPulse 0.6s ease-in-out; }
         @keyframes successPulse {
             0%, 100% { transform: scale(1); }
@@ -134,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-green-800">Produto cadastrado com sucesso!</h3>
                             <div class="mt-2 text-sm text-green-700">
-                                <p><strong>Código:</strong> <?= htmlspecialchars($produto['codigo_barras']) ?></p>
                                 <p><strong>Nome:</strong> <?= htmlspecialchars($produto['nome']) ?></p>
                                 <p><strong>Preço:</strong> R$ <?= number_format($produto['preco'], 2, ',', '.') ?></p>
                                 <p><strong>Estoque:</strong> <?= $produto['estoque'] ?> unidades</p>
@@ -149,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="px-6 py-4 border-b border-gray-200">
                     <h2 class="text-lg font-medium text-gray-900">Cadastrar Novo Produto</h2>
                     <p class="mt-1 text-sm text-gray-600">
-                        Use o leitor de código de barras ou digite manualmente o código
+                        Preencha as informações do produto
                     </p>
                 </div>
                 
@@ -166,34 +147,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                     <?php endif; ?>
-
-                    <!-- Código de Barras -->
-                    <div>
-                        <label for="codigo" class="block text-sm font-medium text-gray-700 mb-2">
-                            Código de Barras <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <input type="text" 
-                                   id="codigo" 
-                                   name="codigo_barras" 
-                                   value="<?= htmlspecialchars($codigo ?? '') ?>"
-                                   class="barcode-input w-full px-4 py-3 border border-gray-300 rounded-lg text-lg font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                   placeholder="Passe o produto no leitor ou digite o código"
-                                   maxlength="50"
-                                   autocomplete="off"
-                                   required>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <i class="fas fa-barcode text-gray-400"></i>
-                            </div>
-                        </div>
-                        <?php if (isset($errors['codigo'])): ?>
-                            <p class="mt-1 text-sm text-red-600"><?= htmlspecialchars($errors['codigo']) ?></p>
-                        <?php endif; ?>
-                        <p class="mt-1 text-sm text-gray-500">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Apenas números são aceitos. O código será preenchido automaticamente pelo leitor.
-                        </p>
-                    </div>
 
                     <!-- Nome do Produto -->
                     <div>
@@ -344,12 +297,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
             
             // Auto-focus no nome após preencher código
-            codigoInput.addEventListener('input', function() {
-                if (this.value.length >= 8) {
-                    nomeInput.focus();
-                }
-            });
-            
             // Formatação automática do preço
             const precoInput = document.getElementById('preco');
             precoInput.addEventListener('blur', function() {
@@ -358,28 +305,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             });
             
-            // Detectar se é um leitor de código de barras (digitação rápida)
-            let lastKeyTime = 0;
-            codigoInput.addEventListener('keydown', function(e) {
-                const currentTime = new Date().getTime();
-                const timeDiff = currentTime - lastKeyTime;
-                lastKeyTime = currentTime;
-                
-                // Se a digitação for muito rápida (menos de 50ms entre teclas), 
-                // provavelmente é um leitor de código de barras
-                if (timeDiff < 50 && this.value.length > 0) {
-                    this.classList.add('barcode-scanned');
-                    setTimeout(() => {
-                        this.classList.remove('barcode-scanned');
-                        nomeInput.focus();
-                    }, 100);
-                }
-            });
-            
             // Limpar formulário após sucesso
             <?php if ($success): ?>
             setTimeout(() => {
-                codigoInput.focus();
+                nomeInput.focus();
             }, 2000);
             <?php endif; ?>
         });
