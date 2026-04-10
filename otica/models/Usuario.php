@@ -16,25 +16,21 @@ class Usuario extends BaseModel
      */
     public function create($data)
     {
-        // Hash da senha
         if (isset($data['senha'])) {
-            $data['senha'] = password_hash($data['senha'], PASSWORD_DEFAULT);
+            $data['senha_hash'] = password_hash($data['senha'], PASSWORD_DEFAULT);
+            unset($data['senha']);
         }
         
-        // Adicionar data de criação
-        $data['created_at'] = date('Y-m-d H:i:s');
+        $data['criado_em'] = date('Y-m-d H:i:s');
         
         return parent::create($data);
     }
     
-    /**
-     * Atualiza um usuário
-     */
     public function update($data)
     {
-        // Hash da senha se fornecida
         if (isset($data['senha']) && !empty($data['senha'])) {
-            $data['senha'] = password_hash($data['senha'], PASSWORD_DEFAULT);
+            $data['senha_hash'] = password_hash($data['senha'], PASSWORD_DEFAULT);
+            unset($data['senha']);
         } else {
             unset($data['senha']);
         }

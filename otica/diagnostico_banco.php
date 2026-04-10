@@ -6,6 +6,7 @@
 
 // Incluir configuração do banco
 require_once 'config/database.php';
+require_once 'config/database_compatibility.php';
 
 echo "<h2>🔍 Diagnóstico Completo do Banco de Dados</h2>";
 echo "<hr>";
@@ -50,7 +51,7 @@ try {
     echo "<p><strong>Total de usuários:</strong> " . $total['total'] . "</p>";
     
     if ($total['total'] > 0) {
-        $stmt = $pdo->query("SELECT id, nome, email, perfil, ativo, created_at FROM usuarios ORDER BY id");
+        $stmt = $pdo->query("SELECT id, nome, email, perfil, ativo, criado_em as created_at FROM usuarios ORDER BY id");
         $usuarios = $stmt->fetchAll();
         
         echo "<table border='1' style='border-collapse: collapse; width: 100%; margin: 10px 0;'>";
@@ -83,7 +84,7 @@ try {
     echo "<h3>🔐 Teste de Consulta de Login:</h3>";
     
     // Testar com email existente
-    $stmt = $pdo->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ? AND ativo = 1");
+    $stmt = $pdo->prepare(DatabaseCompatibility::buildUserQuery('dono@otica.com'));
     $stmt->execute(['dono@otica.com']);
     $usuario = $stmt->fetch();
     

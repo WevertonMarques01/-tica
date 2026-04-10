@@ -18,7 +18,7 @@ try {
     $senha_hash = password_hash($nova_senha, PASSWORD_DEFAULT);
     
     // Atualizar senha do admin
-    $stmt = $db->prepare("UPDATE usuarios SET senha = ? WHERE email = 'admin@otica.com'");
+    $stmt = $db->prepare("UPDATE usuarios SET senha_hash = ? WHERE email = 'admin@otica.com'");
     $result = $stmt->execute([$senha_hash]);
     
     if ($result) {

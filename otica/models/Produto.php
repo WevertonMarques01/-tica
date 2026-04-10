@@ -18,16 +18,7 @@ class Produto extends BaseModel
      */
     public function create($data)
     {
-        // Adicionar data de criação
         $data['criado_em'] = date('Y-m-d H:i:s');
-        
-        // Buscar o ID da marca pelo nome
-        $stmtMarca = $this->db->prepare("SELECT id FROM marcas WHERE nome = ?");
-        $stmtMarca->execute([$data['marca']]);
-        $marcaRow = $stmtMarca->fetch();
-        $marca_id = $marcaRow ? $marcaRow['id'] : null;
-        $data['marca_id'] = $marca_id;
-
         return parent::create($data);
     }
     
@@ -122,19 +113,7 @@ class Produto extends BaseModel
     public function getAllWithDetails()
     {
         $sql = "SELECT * FROM {$this->table} ORDER BY nome";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
-    
-    /**
-     * Busca todos os produtos com informações completas
-     */
-    public function getAllWithDetails()
-    {
-        $sql = "SELECT * FROM {$this->table} ORDER BY nome";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll();
     }
     
@@ -187,8 +166,3 @@ class Produto extends BaseModel
         return (int)($this->db->query($sql)->fetchColumn() ?? 0);
     }
 }
-<<<<<<< Updated upstream
-=======
-$preco_venda = (float)($_POST['preco_venda'] ?? 0);
->>>>>>> Stashed changes
-?>

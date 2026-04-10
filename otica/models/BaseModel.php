@@ -1,12 +1,10 @@
 <?php
 /**
- * Classe Base para todos os modelos
+ * Base Model - Base class for all models
  */
-<<<<<<< Updated upstream
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/db_compat.php';
 
-=======
->>>>>>> Stashed changes
 class BaseModel
 {
     protected $db;
@@ -17,9 +15,6 @@ class BaseModel
         $this->db = Database::getInstance()->getConnection();
     }
     
-    /**
-     * Busca todos os registros
-     */
     public function getAll($orderBy = null, $limit = null)
     {
         $sql = "SELECT * FROM {$this->table}";
@@ -37,9 +32,6 @@ class BaseModel
         return $stmt->fetchAll();
     }
     
-    /**
-     * Busca por ID
-     */
     public function getById($id)
     {
         $sql = "SELECT * FROM {$this->table} WHERE id = :id";
@@ -49,9 +41,6 @@ class BaseModel
         return $stmt->fetch();
     }
     
-    /**
-     * Busca com filtros
-     */
     public function find($conditions = [], $orderBy = null, $limit = null)
     {
         $sql = "SELECT * FROM {$this->table}";
@@ -79,9 +68,6 @@ class BaseModel
         return $stmt->fetchAll();
     }
     
-    /**
-     * Cria um novo registro
-     */
     public function create($data)
     {
         $fields = array_keys($data);
@@ -94,9 +80,6 @@ class BaseModel
         return $stmt->execute($data);
     }
     
-    /**
-     * Atualiza um registro
-     */
     public function update($data)
     {
         if (!isset($data['id'])) {
@@ -119,9 +102,6 @@ class BaseModel
         return $stmt->execute($data);
     }
     
-    /**
-     * Remove um registro
-     */
     public function delete($id)
     {
         $sql = "DELETE FROM {$this->table} WHERE id = :id";
@@ -130,9 +110,6 @@ class BaseModel
         return $stmt->execute();
     }
     
-    /**
-     * Conta registros
-     */
     public function count($conditions = [])
     {
         $sql = "SELECT COUNT(*) as total FROM {$this->table}";
@@ -153,5 +130,3 @@ class BaseModel
         return $result['total'];
     }
 }
-?>
-

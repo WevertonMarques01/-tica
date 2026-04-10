@@ -6,6 +6,7 @@
 
 // Incluir arquivo de configuração
 require_once 'otica/config/database.php';
+require_once 'otica/config/database_compatibility.php';
 
 echo "<h2>Teste de Login - Sistema Ótica</h2>";
 echo "<hr>";
@@ -32,7 +33,8 @@ try {
         $email_teste = 'admin@otica.com';
         $senha_teste = 'password'; // Senha padrão comum
         
-        $stmt = $db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ?");
+        $query = DatabaseCompatibility::buildUserQuery($email_teste);
+        $stmt = $db->prepare($query);
         $stmt->execute([$email_teste]);
         $usuario = $stmt->fetch();
         

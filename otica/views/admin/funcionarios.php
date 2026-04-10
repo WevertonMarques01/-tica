@@ -15,7 +15,7 @@ $db = Database::getInstance()->getConnection();
 // Buscar funcionários
 try {
     $stmt = $db->prepare("
-        SELECT id, nome, email, perfil, ativo, ultimo_login, created_at
+        SELECT id, nome, email, perfil, ativo, ultimo_login, criado_em as created_at
         FROM usuarios 
         ORDER BY nome
     ");

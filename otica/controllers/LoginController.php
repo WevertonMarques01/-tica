@@ -5,6 +5,7 @@
 
 // Incluir configuração do banco de dados
 require_once '../config/database.php';
+require_once '../config/database_compatibility.php';
 session_start();
 
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
@@ -62,7 +63,8 @@ class LoginController {
      */
     private function authenticateUser($email, $password) {
         try {
-            $stmt = $this->db->prepare("SELECT id, nome, email, senha, perfil FROM usuarios WHERE email = ?");
+            $query = DatabaseCompatibility::buildUserQuery($email);
+            $stmt = $this->db->prepare($query);
             $stmt->execute([$email]);
             $usuario = $stmt->fetch();
             

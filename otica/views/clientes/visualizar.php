@@ -219,14 +219,12 @@ try {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Documento</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['documento']); ?></p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">CPF</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['cpf'] ?? ''); ?></p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                                    <?php echo strtoupper($cliente['tipo_documento'] ?? 'CPF'); ?>
-                                </p>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefone</label>
+                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['telefone'] ?? ''); ?></p>
                             </div>
                         </div>
                         <?php if (!empty($cliente['data_nascimento'])): ?>
@@ -253,11 +251,7 @@ try {
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                             <p class="mt-1">
-                                <?php if ($cliente['ativo']): ?>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
-                                <?php else: ?>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Inativo</span>
-                                <?php endif; ?>
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Ativo</span>
                             </p>
                         </div>
                     </div>
@@ -301,7 +295,7 @@ try {
                 </div>
 
                 <!-- Endereço -->
-                <?php if (!empty($cliente['endereco']) || !empty($cliente['cidade'])): ?>
+                <?php if (!empty($cliente['endereco']) || !empty($cliente['bairro'])): ?>
                 <div class="card p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Endereço</h2>
                     <div class="space-y-4">
@@ -319,40 +313,12 @@ try {
                             <?php endif; ?>
                         </div>
                         <?php endif; ?>
-                        <?php if (!empty($cliente['complemento'])): ?>
+                        <?php if (!empty($cliente['bairro'])): ?>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Complemento</label>
-                            <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['complemento']); ?></p>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bairro</label>
+                            <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['bairro']); ?></p>
                         </div>
                         <?php endif; ?>
-                        <div class="grid grid-cols-2 gap-4">
-                            <?php if (!empty($cliente['bairro'])): ?>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bairro</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['bairro']); ?></p>
-                            </div>
-                            <?php endif; ?>
-                            <?php if (!empty($cliente['cep'])): ?>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">CEP</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['cep']); ?></p>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <?php if (!empty($cliente['cidade'])): ?>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cidade</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['cidade']); ?></p>
-                            </div>
-                            <?php endif; ?>
-                            <?php if (!empty($cliente['estado'])): ?>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Estado</label>
-                                <p class="mt-1 text-sm text-gray-900 dark:text-white"><?php echo htmlspecialchars($cliente['estado']); ?></p>
-                            </div>
-                            <?php endif; ?>
-                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -376,17 +342,9 @@ try {
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Data de Cadastro</label>
                             <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                                <?php echo date('d/m/Y H:i', strtotime($cliente['created_at'])); ?>
+                                <?php echo date('d/m/Y H:i', strtotime($cliente['criado_em'])); ?>
                             </p>
                         </div>
-                        <?php if (!empty($cliente['updated_at']) && $cliente['updated_at'] !== $cliente['created_at']): ?>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Última Atualização</label>
-                            <p class="mt-1 text-sm text-gray-900 dark:text-white">
-                                <?php echo date('d/m/Y H:i', strtotime($cliente['updated_at'])); ?>
-                            </p>
-                        </div>
-                        <?php endif; ?>
                     </div>
                 </div>
             </div>

@@ -1,16 +1,15 @@
 <?php
 /**
  * Database Compatibility - WIZ ÓPTICA
- * Auto-detects column names
  */
-class DatabaseCompatibility {
+class DB {
     private static $columns = [];
     
     public static function getColumns($table) {
         if (!isset(self::$columns[$table])) {
             try {
-                $db = Database::getInstance()->getConnection();
-                $stmt = $db->query("DESCRIBE $table");
+                $pdo = Database::getInstance()->getConnection();
+                $stmt = $pdo->query("DESCRIBE $table");
                 $cols = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 self::$columns[$table] = array_flip($cols);
             } catch (Exception $e) {
@@ -25,8 +24,15 @@ class DatabaseCompatibility {
         return isset($cols[$column]);
     }
     
-    public static function buildUserQuery($email) {
-        $senha = self::hasColumn('usuarios', 'senha_hash') ? 'senha_hash' : 'senha';
-        return "SELECT id, nome, email, {$senha} as senha, perfil FROM usuarios WHERE email = ?";
+    public static function getColumn($table, $desired, $fallback) {
+        if (self::hasColumn($table, $desired)) {
+            return $desired;
+        }
+        return $fallback;
+    }
+    
+    public static function userQuery() {
+        $senha = self::getColumn('usuarios', 'senha_hash', 'senha');
+        return "SELECT id, nome, email, {$senha} as senha, perfil, ativo FROM usuarios WHERE email = ?";
     }
 }
