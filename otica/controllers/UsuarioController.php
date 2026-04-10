@@ -28,7 +28,7 @@ class UsuarioController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT id, nome, email, perfil, ativo, ultimo_login, created_at
+                SELECT id, nome, email, perfil, ativo, ultimo_login, criado_em as created_at
                 FROM usuarios 
                 ORDER BY nome
             ");
@@ -67,7 +67,7 @@ class UsuarioController {
             
             $stmt = $this->db->prepare("
                 INSERT INTO usuarios (
-                    nome, email, senha, perfil, ativo
+                    nome, email, senha_hash, perfil, ativo
                 ) VALUES (?, ?, ?, ?, ?)
             ");
             
@@ -131,7 +131,7 @@ class UsuarioController {
             
             // Se uma nova senha foi fornecida, atualizar
             if (!empty($dados['senha'])) {
-                $campos['senha'] = password_hash($dados['senha'], PASSWORD_DEFAULT);
+                $campos['senha_hash'] = password_hash($dados['senha'], PASSWORD_DEFAULT);
             }
             
             $sql = "UPDATE usuarios SET ";
@@ -215,7 +215,7 @@ class UsuarioController {
         
         try {
             $stmt = $this->db->prepare("
-                SELECT id, nome, email, perfil, ativo, ultimo_login, created_at
+                SELECT id, nome, email, perfil, ativo, ultimo_login, criado_em as created_at
                 FROM usuarios 
                 WHERE id = ?
             ");

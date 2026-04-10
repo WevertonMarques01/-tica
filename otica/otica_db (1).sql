@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 17/08/2025 às 17:52
+-- Tempo de geração: 10-Abr-2026 às 18:11
 -- Versão do servidor: 10.4.32-MariaDB
--- Versão do PHP: 8.0.30
+-- versão do PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `clientes`
+-- Estrutura da tabela `clientes`
 --
 
 CREATE TABLE `clientes` (
@@ -34,13 +34,25 @@ CREATE TABLE `clientes` (
   `cpf` varchar(14) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
   `data_nascimento` date DEFAULT NULL,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `endereco` text DEFAULT NULL,
+  `bairro` text DEFAULT NULL,
+  `numero` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `clientes`
+--
+
+INSERT INTO `clientes` (`id`, `nome`, `telefone`, `cpf`, `email`, `data_nascimento`, `criado_em`, `endereco`, `bairro`, `numero`) VALUES
+(1, 'Jefferson Computer', '8598446146', '645.165.750-60', 'jeffersoncomputer58@gmail.com', NULL, '2026-04-10 15:28:54', 'salaberga', '', 5),
+(2, 'teste', '(00) 00000-0000', '000.000.000-00', 'jeffersoncomputer58@gmail.com', NULL, '2026-04-10 15:38:27', 'salaberga', 'OUTRA BANDA', 1),
+(3, 'cirilo', '1111111111111111111', '000.000.121-21', 'ciriloerafaely@gmail.com', NULL, '2026-04-10 15:52:45', 'salaberga', 'OUTRA BANDA', 0);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `financeiro`
+-- Estrutura da tabela `financeiro`
 --
 
 CREATE TABLE `financeiro` (
@@ -54,7 +66,7 @@ CREATE TABLE `financeiro` (
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `logs`
+-- Estrutura da tabela `logs`
 --
 
 CREATE TABLE `logs` (
@@ -66,7 +78,7 @@ CREATE TABLE `logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `logs`
+-- Extraindo dados da tabela `logs`
 --
 
 INSERT INTO `logs` (`id`, `usuario_id`, `acao`, `detalhes`, `data`) VALUES
@@ -77,7 +89,7 @@ INSERT INTO `logs` (`id`, `usuario_id`, `acao`, `detalhes`, `data`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `ordens_servico`
+-- Estrutura da tabela `ordens_servico`
 --
 
 CREATE TABLE `ordens_servico` (
@@ -93,7 +105,7 @@ CREATE TABLE `ordens_servico` (
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `produtos`
+-- Estrutura da tabela `produtos`
 --
 
 CREATE TABLE `produtos` (
@@ -105,13 +117,24 @@ CREATE TABLE `produtos` (
   `cor` varchar(30) DEFAULT NULL,
   `preco` decimal(10,2) DEFAULT NULL,
   `estoque` int(11) DEFAULT NULL,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `codigo` varchar(50) DEFAULT NULL,
+  `estoque_atual` int(11) DEFAULT NULL,
+  `preco_venda` decimal(10,2) DEFAULT NULL,
+  `descricao` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `produtos`
+--
+
+INSERT INTO `produtos` (`id`, `nome`, `tipo`, `marca`, `modelo`, `cor`, `preco`, `estoque`, `criado_em`, `codigo`, `estoque_atual`, `preco_venda`, `descricao`) VALUES
+(1, 'teste', 're', 'er', 're', 'er', 1.00, 1, '2026-04-10 15:34:18', NULL, NULL, NULL, 'sadasd');
 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `receitas`
+-- Estrutura da tabela `receitas`
 --
 
 CREATE TABLE `receitas` (
@@ -130,10 +153,18 @@ CREATE TABLE `receitas` (
   `validade` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Extraindo dados da tabela `receitas`
+--
+
+INSERT INTO `receitas` (`id`, `cliente_id`, `esfera_od`, `cilindro_od`, `eixo_od`, `adicao_od`, `esfera_oe`, `cilindro_oe`, `eixo_oe`, `adicao_oe`, `obs`, `data_receita`, `validade`) VALUES
+(1, 1, '12', '12', '12', '12', '12', '12', '12', '12', 'asda', '2026-04-10', '2028-01-23'),
+(2, 2, '12', '12', '12', '12', '', '', '', '', 'ghdffghtdfgc', '2026-04-10', '2028-01-23');
+
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `usuarios`
+-- Estrutura da tabela `usuarios`
 --
 
 CREATE TABLE `usuarios` (
@@ -142,20 +173,25 @@ CREATE TABLE `usuarios` (
   `email` varchar(100) NOT NULL,
   `senha_hash` text NOT NULL,
   `permissao` int(11) NOT NULL,
-  `criado_em` timestamp NOT NULL DEFAULT current_timestamp()
+  `perfil` varchar(20) NOT NULL DEFAULT 'vendedor',
+  `ativo` tinyint(1) NOT NULL DEFAULT 1,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `ultimo_login` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Despejando dados para a tabela `usuarios`
+-- Extraindo dados da tabela `usuarios`
 --
 
-INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `permissao`, `criado_em`) VALUES
-(2, 'Orcleison', 'admin@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 1, '0000-00-00 00:00:00');
+INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `permissao`, `perfil`, `ativo`, `criado_em`, `ultimo_login`, `updated_at`) VALUES
+(2, 'Orcleison', 'admin@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 1, 'admin', 1, '0000-00-00 00:00:00', NULL, NULL),
+(3, 'Dono', 'dono@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 0, 'admin', 1, '2026-04-09 17:30:02', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `vendas`
+-- Estrutura da tabela `vendas`
 --
 
 CREATE TABLE `vendas` (
@@ -167,10 +203,18 @@ CREATE TABLE `vendas` (
   `data_venda` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Extraindo dados da tabela `vendas`
+--
+
+INSERT INTO `vendas` (`id`, `cliente_id`, `usuario_id`, `total`, `forma_pagamento`, `data_venda`) VALUES
+(1, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:35:31'),
+(2, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:37:56');
+
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `venda_produtos`
+-- Estrutura da tabela `venda_produtos`
 --
 
 CREATE TABLE `venda_produtos` (
@@ -182,11 +226,19 @@ CREATE TABLE `venda_produtos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Extraindo dados da tabela `venda_produtos`
+--
+
+INSERT INTO `venda_produtos` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`) VALUES
+(1, 1, 1, 1, 1.00),
+(2, 2, 1, 1, 1.00);
+
+--
 -- Índices para tabelas despejadas
 --
 
 --
--- Índices de tabela `clientes`
+-- Índices para tabela `clientes`
 --
 ALTER TABLE `clientes`
   ADD PRIMARY KEY (`id`),
@@ -195,14 +247,14 @@ ALTER TABLE `clientes`
   ADD KEY `idx_clientes_email` (`email`);
 
 --
--- Índices de tabela `financeiro`
+-- Índices para tabela `financeiro`
 --
 ALTER TABLE `financeiro`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_financeiro_venda` (`venda_id`);
 
 --
--- Índices de tabela `logs`
+-- Índices para tabela `logs`
 --
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`id`),
@@ -210,7 +262,7 @@ ALTER TABLE `logs`
   ADD KEY `idx_logs_data` (`data`);
 
 --
--- Índices de tabela `ordens_servico`
+-- Índices para tabela `ordens_servico`
 --
 ALTER TABLE `ordens_servico`
   ADD PRIMARY KEY (`id`),
@@ -218,26 +270,26 @@ ALTER TABLE `ordens_servico`
   ADD KEY `idx_ordens_servico_status` (`status`);
 
 --
--- Índices de tabela `produtos`
+-- Índices para tabela `produtos`
 --
 ALTER TABLE `produtos`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices de tabela `receitas`
+-- Índices para tabela `receitas`
 --
 ALTER TABLE `receitas`
   ADD PRIMARY KEY (`id`);
 
 --
--- Índices de tabela `usuarios`
+-- Índices para tabela `usuarios`
 --
 ALTER TABLE `usuarios`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Índices de tabela `vendas`
+-- Índices para tabela `vendas`
 --
 ALTER TABLE `vendas`
   ADD PRIMARY KEY (`id`),
@@ -245,7 +297,7 @@ ALTER TABLE `vendas`
   ADD KEY `idx_vendas_usuario` (`usuario_id`);
 
 --
--- Índices de tabela `venda_produtos`
+-- Índices para tabela `venda_produtos`
 --
 ALTER TABLE `venda_produtos`
   ADD PRIMARY KEY (`id`),
@@ -253,14 +305,14 @@ ALTER TABLE `venda_produtos`
   ADD KEY `idx_venda_produtos_produto` (`produto_id`);
 
 --
--- AUTO_INCREMENT para tabelas despejadas
+-- AUTO_INCREMENT de tabelas despejadas
 --
 
 --
 -- AUTO_INCREMENT de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `financeiro`
@@ -284,31 +336,31 @@ ALTER TABLE `ordens_servico`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de tabela `receitas`
 --
 ALTER TABLE `receitas`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `vendas`
 --
 ALTER TABLE `vendas`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de tabela `venda_produtos`
 --
 ALTER TABLE `venda_produtos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,46 +1,35 @@
 <?php
-// Verificar autenticação
 require_once '../../includes/auth_check.php';
-
-// Conectar ao banco de dados
 require_once '../../config/database.php';
+require_once '../../config/database_compatibility.php';
+
 $db = Database::getInstance()->getConnection();
 
+$pageTitle = 'Painel Administrativo';
+$moduleName = 'Bem-vindo ao Wiz Óptica';
+
 try {
-    // Vendas de hoje - usar campos corretos
-    $stmt = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
+    $stmt = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(total), 0) as valor FROM vendas WHERE DATE(data_venda) = CURDATE()");
     $stmt->execute();
     $vendasHoje = $stmt->fetch();
 
-    // Novos clientes hoje - usar 'created_at' ao invés de 'criado_em'
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(created_at) = CURDATE()");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM clientes WHERE DATE(criado_em) = CURDATE()");
     $stmt->execute();
     $novosClientes = $stmt->fetch();
 
-    // Total de produtos em estoque - usar 'estoque' e verificar se ativo
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0 AND ativo = 1");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM produtos WHERE estoque > 0");
     $stmt->execute();
     $produtosEstoque = $stmt->fetch();
 
-    // Receita do mês atual - adicionar COALESCE para evitar NULL
-    $stmt = $db->prepare("SELECT COALESCE(SUM(valor_total), 0) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
+    $stmt = $db->prepare("SELECT COALESCE(SUM(total), 0) as valor FROM vendas WHERE MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())");
     $stmt->execute();
     $receitaMes = $stmt->fetch();
 
-    // Atividade recente - usar tabela 'logs_sistema' e campo 'created_at'
-    $stmt = $db->prepare("
-        SELECT l.acao, l.detalhes, l.created_at as data, u.nome as usuario 
-        FROM logs_sistema l 
-        LEFT JOIN usuarios u ON l.usuario_id = u.id 
-        ORDER BY l.created_at DESC 
-        LIMIT 10
-    ");
-    $stmt->execute();
+    $stmt = $db->query("SELECT * FROM logs ORDER BY id DESC LIMIT 10");
     $atividades = $stmt->fetchAll();
 
 } catch (PDOException $e) {
-    error_log("Erro ao buscar estatísticas: " . $e->getMessage());
-    // Valores padrão em caso de erro
+    error_log("Erro: " . $e->getMessage());
     $vendasHoje = ['total' => 0, 'valor' => 0];
     $novosClientes = ['total' => 0];
     $produtosEstoque = ['total' => 0];
@@ -48,7 +37,6 @@ try {
     $atividades = [];
 }
 
-// Garantir valores padrão para evitar null
 $vendasHoje['total'] = $vendasHoje['total'] ?? 0;
 $vendasHoje['valor'] = $vendasHoje['valor'] ?? 0;
 $novosClientes['total'] = $novosClientes['total'] ?? 0;
@@ -56,726 +44,568 @@ $produtosEstoque['total'] = $produtosEstoque['total'] ?? 0;
 $receitaMes['valor'] = $receitaMes['valor'] ?? 0;
 ?>
 <!DOCTYPE html>
-<html lang="pt-BR" class="light">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Wiz Ótica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title><?php echo $pageTitle; ?> - Wiz Óptica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'otica-primary': '#28d2c3',
-                        'otica-secondary': '#20b8a9',
-                        'otica-accent': '#f4a261',
-                        'otica-warm': '#e76f51',
-                        'otica-sage': '#a4c3a2',
-                        'otica-cream': '#f7f3e9',
-                        'otica-mist': '#e8f4f8',
-                        'otica-forest': '#2d5016',
-                        'otica-gold': '#f1c40f',
-                        'otica-coral': '#ff6b6b',
-                        'otica-blue': '#3b82f6',
-                        'otica-indigo': '#6366f1',
-                        'otica-purple': '#8b5cf6',
-                        'otica-pink': '#ec4899',
-                        'otica-red': '#ef4444',
-                        'otica-orange': '#f97316',
-                        'otica-yellow': '#eab308',
-                        'otica-lime': '#84cc16',
-                        'otica-green': '#22c55e',
-                        'otica-emerald': '#10b981',
-                        'otica-teal': '#14b8a6',
-                        'otica-cyan': '#06b6d4',
-                        'otica-sky': '#0ea5e9'
+                        darkblue: '#0f172a',
+                        darkblue2: '#1e293b',
+                        darkblue3: '#334155',
+                        accent: '#0ea5e9',
+                        accent2: '#0284c7'
+                    },
+                    fontFamily: {
+                        nunito: ['Nunito', 'sans-serif']
                     }
                 }
             }
         }
     </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        /* Light Mode */
-        .light {
-            background-color: #f8fafc;
-            color: #1f2937;
-        }
-
-        .light .sidebar {
-            background-color: #1e293b;
-        }
-
-        .light .sidebar-item:hover {
-            background-color: #334155;
-        }
-
-        .light .sidebar-item.active {
-            background-color: #28d2c3;
-        }
-
-        .light .card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-
-        .light .chart-container {
-            background: white;
-            border: 1px solid #e2e8f0;
-        }
-
-        .light .activity-item {
-            background-color: #f0fdfa;
-        }
-
-        .light .activity-item:hover {
-            background-color: #ccfbf1;
-        }
-
-        /* Light Mode - Stat Cards */
-        .light .stat-card {
-            background-color: #28d2c3 !important;
-            color: white !important;
-        }
-
-        .light .stat-card.sales {
-            background-color: #3b82f6 !important;
-        }
-
-        .light .stat-card.clients {
-            background-color: #6366f1 !important;
-        }
-
-        .light .stat-card.revenue {
-            background-color: #10b981 !important;
-        }
-
-        /* Dark Mode */
-        .dark {
-            background-color: #0f172a;
-            color: #f1f5f9;
-        }
-
-        .dark .sidebar {
-            background-color: #1e293b;
-        }
-
-        .dark .sidebar-item:hover {
-            background-color: #334155;
-        }
-
-        .dark .sidebar-item.active {
-            background-color: #28d2c3;
-        }
-
-        .dark .card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-
-        .dark .chart-container {
-            background: #1e293b;
-            border: 1px solid #334155;
-        }
-
-        .dark .activity-item {
-            background-color: #0f172a;
-        }
-
-        .dark .activity-item:hover {
-            background-color: #1e293b;
-        }
-
-        /* Dark Mode - Stat Cards */
-        .dark .stat-card {
-            background-color: #28d2c3 !important;
-            color: white !important;
-        }
-
-        .dark .stat-card.sales {
-            background-color: #3b82f6 !important;
-        }
-
-        .dark .stat-card.clients {
-            background-color: #6366f1 !important;
-        }
-
-        .dark .stat-card.revenue {
-            background-color: #10b981 !important;
-        }
-
-        .dark .text-gray-800 {
-            color: #f1f5f9;
-        }
-
-        .dark .text-gray-600 {
-            color: #cbd5e1;
-        }
-
-        .dark .text-gray-500 {
-            color: #94a3b8;
-        }
-
-        .dark .text-gray-400 {
-            color: #64748b;
-        }
-
-        .dark .bg-gray-50 {
-            background-color: #0f172a;
-        }
-
-        .dark .bg-gray-100 {
-            background-color: #1e293b;
-        }
-
-        .dark .border-gray-200 {
-            border-color: #334155;
-        }
-
-        /* Common Styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Nunito', sans-serif; background: #f1f5f9; }
+        
         .sidebar {
-            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+            background: linear-gradient(180deg, #0f172a 0%, #1e3a5f 100%);
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
         }
-
-        .sidebar-item {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            margin: 4px 0;
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
         }
-
-        .sidebar-item:hover {
-            transform: translateX(5px);
+        
+        .sidebar-logo i { font-size: 1.75rem; color: #0ea5e9; }
+        .sidebar-logo h1 { font-size: 1.25rem; font-weight: 700; color: #f8fafc; }
+        
+        .menu-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin: 1rem 0 0.5rem 0.75rem;
+            font-weight: 600;
         }
-
-        .sidebar-item.active {
-            box-shadow: 0 4px 15px rgba(40, 210, 195, 0.3);
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 0.25rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
-
+        
+        .menu-item:hover {
+            background: rgba(14, 165, 233, 0.15);
+            color: #f8fafc;
+            transform: translateX(4px);
+        }
+        
+        .menu-item.active {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+        }
+        
+        .menu-item i { width: 20px; text-align: center; }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title-page {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        
+        .page-subtitle {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .user-name { font-weight: 600; color: #0f172a; font-size: 0.875rem; }
+        
         .card {
+            background: white;
             border-radius: 16px;
-            transition: all 0.3s ease;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-
+        
+        .card-title i { color: #0ea5e9; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
         .stat-card {
-            background-color: #28d2c3;
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .stat-card.blue { border-color: #0ea5e9; }
+        .stat-card.green { border-color: #10b981; }
+        .stat-card.purple { border-color: #8b5cf6; }
+        .stat-card.orange { border-color: #f59e0b; }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
             color: white;
         }
-
-        .stat-card.sales {
-            background-color: #3b82f6;
+        
+        .stat-icon.blue { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+        .stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
+        .stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        
+        .stat-info { flex: 1; }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
         }
-
-        .stat-card.clients {
-            background-color: #6366f1;
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
         }
-
-        .stat-card.revenue {
-            background-color: #10b981;
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
         }
-
-        .btn-primary {
-            background-color: #28d2c3;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background-color: #20b8a9;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(40, 210, 195, 0.3);
-        }
-
-        .btn-danger {
-            background-color: #ef4444;
-            transition: all 0.3s ease;
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
-        }
-
-        .notification {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .recent-activity {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
+        
         .activity-item {
-            padding: 12px;
-            border-left: 3px solid #28d2c3;
-            margin-bottom: 8px;
-            border-radius: 0 8px 8px 0;
-            transition: all 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
         }
-
+        
         .activity-item:hover {
-            transform: translateX(5px);
+            background: #f8fafc;
         }
-
-        .quick-action-card {
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.info { background: #dbeafe; color: #2563eb; }
+        
+        .activity-content { flex: 1; }
+        
+        .activity-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        
+        .activity-desc {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        
+        .activity-time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        
+        .quick-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #0f172a;
             transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
-
-        .quick-action-card:hover {
-            transform: translateY(-5px);
+        
+        .quick-action:hover {
+            background: white;
+            border-color: #0ea5e9;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.2);
         }
-
-        .quick-action-card:hover .icon {
-            transform: scale(1.1);
+        
+        .quick-action i {
+            font-size: 1.5rem;
+            color: #0ea5e9;
+            margin-bottom: 0.5rem;
         }
-
-        .icon {
-            transition: transform 0.3s ease;
+        
+        .quick-action span {
+            font-size: 0.875rem;
+            font-weight: 600;
         }
-
-        .theme-toggle {
-            transition: all 0.3s ease;
+        
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            margin-top: auto;
         }
-
-        .theme-toggle.rotated {
-            transform: rotate(180deg);
+        
+        .btn-logout:hover {
+            background: #ef4444;
+            color: white;
         }
-
-        /* Estilos para a barra de rolagem do sidebar */
-        .sidebar nav::-webkit-scrollbar {
-            width: 0px;
-            display: none;
+        
+        .menu-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
         }
-
-        .sidebar nav::-webkit-scrollbar-track {
-            display: none;
+        
+        .menu-scroll::-webkit-scrollbar { width: 4px; }
+        .menu-scroll::-webkit-scrollbar-track { background: transparent; }
+        .menu-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        
+        @media (max-width: 1200px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2 { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
         }
-
-        .sidebar nav::-webkit-scrollbar-thumb {
-            display: none;
-        }
-
-        .sidebar nav::-webkit-scrollbar-thumb:hover {
-            display: none;
-        }
-
-        /* Para Firefox */
-        .sidebar nav {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
+        
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-content {
-                margin-left: 0 !important;
-                width: 100% !important;
-            }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
     <!-- Sidebar -->
-    <div class="sidebar fixed left-0 top-0 h-full w-64 z-50">
-        <div class="p-6 h-full flex flex-col">
-            <!-- Logo -->
-            <div class="flex items-center mb-8 flex-shrink-0">
-                <i class="fas fa-glasses text-3xl text-white mr-3"></i>
-                <h1 class="text-xl font-bold text-white">Wiz Admin</h1>
-            </div>
-
-            <!-- Menu Items -->
-            <nav class="space-y-2 flex-1 overflow-y-auto">
-                <a href="#" class="sidebar-item active flex items-center p-3 text-white">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    <span>Painel</span>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fas fa-glasses"></i>
+            <h1>Wiz Óptica</h1>
+        </div>
+        
+        <div class="menu-scroll">
+            <div class="menu-group">
+                <p class="menu-title">Principal</p>
+                <a href="index.php" class="menu-item active">
+                    <i class="fas fa-home"></i>
+                    <span>Início</span>
                 </a>
-                <a href="../vendas/nova.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-shopping-cart w-5 mr-3"></i>
+                <a href="../vendas/nova.php" class="menu-item">
+                    <i class="fas fa-plus-circle"></i>
                     <span>Nova Venda</span>
                 </a>
-                <a href="../vendas/historico.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-history w-5 mr-3"></i>
-                    <span>Histórico</span>
+                <a href="../vendas/historico.php" class="menu-item">
+                    <i class="fas fa-history"></i>
+                    <span>Histórico Vendas</span>
                 </a>
-                <a href="../clientes/index.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-users w-5 mr-3"></i>
+            </div>
+            
+            <div class="menu-group">
+                <p class="menu-title">Cadastros</p>
+                <a href="../clientes/index.php" class="menu-item">
+                    <i class="fas fa-users"></i>
                     <span>Clientes</span>
                 </a>
-                <a href="../clientes/novo.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-user-plus w-5 mr-3"></i>
+                <a href="../clientes/novo.php" class="menu-item">
+                    <i class="fas fa-user-plus"></i>
                     <span>Novo Cliente</span>
                 </a>
-                <a href="../receitas/index.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-eye w-5 mr-3"></i>
-                    <span>Receitas</span>
-                </a>
-                <a href="../receitas/nova.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
-                    <span>Nova Receita</span>
-                </a>
-                <a href="../financeiro/relatorio.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    <span>Financeiro</span>
-                </a>
-                <a href="../produtos/index.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-box w-5 mr-3"></i>
+                <a href="../produtos/index.php" class="menu-item">
+                    <i class="fas fa-box"></i>
                     <span>Produtos</span>
                 </a>
-                <a href="../produtos/novo.php" class="sidebar-item flex items-center p-3 text-white">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                <a href="../produtos/novo.php" class="menu-item">
+                    <i class="fas fa-plus"></i>
                     <span>Novo Produto</span>
                 </a>
-            </nav>
+            </div>
             
-            <!-- Logout Button -->
-
-            <div class="absolute bottom-6 left-6 right-6">
-                <button onclick="showConfirmModal('Tem certeza que deseja sair?', function() { window.location.href = '../../controllers/LoginController.php?action=logout'; })" class="btn-danger w-full py-3 px-4 text-white rounded-lg font-semibold">
+            <div class="menu-group">
+                <p class="menu-title">Serviços</p>
+                <a href="../receitas/index.php" class="menu-item">
+                    <i class="fas fa-glasses"></i>
+                    <span>Receitas</span>
+                </a>
+                <a href="../receitas/nova.php" class="menu-item">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nova Receita</span>
+                </a>
+            </div>
             
-                
-                    <i class="fas fa-sign-out-alt mr-2"></i>
-                    Sair
-                </button>
+            <div class="menu-group">
+                <p class="menu-title">Financeiro</p>
+                <a href="../financeiro/relatorio.php" class="menu-item">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Relatórios</span>
+                </a>
             </div>
         </div>
-    </div>
-
-    <!-- Mobile Menu Button -->
-    <div class="lg:hidden fixed top-4 left-4 z-50">
-        <button onclick="toggleSidebar()" class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600">
-            <i class="fas fa-bars text-gray-700 dark:text-gray-300"></i>
+        
+        <button onclick="logout()" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Sair</span>
         </button>
-    </div>
+    </aside>
 
     <!-- Main Content -->
-    <div class="main-content ml-0 lg:ml-64 p-6">
+    <main class="main-content">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
+        <header class="page-header">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
-                <p class="text-gray-600 dark:text-gray-300">Bem-vindo ao painel administrativo da Wiz</p>
+                <h1 class="page-title-page"><?php echo $pageTitle; ?></h1>
+                <p class="page-subtitle"><?php echo $moduleName; ?></p>
             </div>
-            <div class="flex items-center space-x-4">
-                <!-- Theme Toggle -->
-                <button onclick="toggleTheme()" class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600 theme-toggle">
-                    <i class="fas fa-moon text-gray-600 dark:text-yellow-400" id="theme-icon"></i>
-                </button>
-                
-                <div class="relative">
-                    <button class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
-                        <i class="fas fa-bell text-gray-600 dark:text-gray-300"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-                    </button>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <?php echo strtoupper(substr($_SESSION['usuario_nome'] ?? 'U', 0, 1)); ?>
                 </div>
-                <div class="flex items-center space-x-3 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md border border-gray-200 dark:border-gray-600">
-                    <div class="w-8 h-8 bg-otica-primary rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-white text-sm"></i>
-                    </div>
-                    <span class="text-gray-700 dark:text-gray-300 font-medium"><?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Admin'); ?></span>
-                </div>
+                <div class="user-name"><?php echo htmlspecialchars($_SESSION['usuario_nome'] ?? 'Usuário'); ?></div>
             </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="card stat-card p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-black/90 text-sm font-medium">Vendas Hoje</p>
-                        <p class="text-3xl font-bold text-black"><?php echo $vendasHoje['total'] ?? 0; ?></p>
-                        <p class="text-black/80 text-sm mt-1">
-                            R$ <?php echo number_format($vendasHoje['valor'] ?? 0, 2, ',', '.'); ?>
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-black/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-shopping-cart text-white text-xl"></i>
-                    </div>
+        </header>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon blue">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?php echo $vendasHoje['total']; ?></div>
+                    <div class="stat-label">Vendas hoje</div>
                 </div>
             </div>
-
-            <div class="card stat-card sales p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-white/90 text-sm font-medium">Novos Clientes</p>
-                        <p class="text-3xl font-bold text-white"><?php echo $novosClientes['total'] ?? 0; ?></p>
-                        <p class="text-white/80 text-sm mt-1">
-                            Hoje
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user-plus text-white text-xl"></i>
-                    </div>
+            
+            <div class="stat-card green">
+                <div class="stat-icon green">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">R$ <?php echo number_format($vendasHoje['valor'], 2, ',', '.'); ?></div>
+                    <div class="stat-label">Valor hoje</div>
                 </div>
             </div>
-
-            <div class="card stat-card clients p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-white/90 text-sm font-medium">Produtos Estoque</p>
-                        <p class="text-3xl font-bold text-white"><?php echo $produtosEstoque['total'] ?? 0; ?></p>
-                        <p class="text-white/80 text-sm mt-1">
-                            Disponível
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-boxes text-white text-xl"></i>
-                    </div>
+            
+            <div class="stat-card purple">
+                <div class="stat-icon purple">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?php echo $novosClientes['total']; ?></div>
+                    <div class="stat-label">Novos clientes hoje</div>
                 </div>
             </div>
-
-            <div class="card stat-card revenue p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-white/90 text-sm font-medium">Receita Mensal</p>
-                        <p class="text-3xl font-bold text-white">R$ <?php echo number_format($receitaMes['valor'] ?? 0, 2, ',', '.'); ?></p>
-                        <p class="text-white/80 text-sm mt-1">
-                            Este mês
-                        </p>
-                    </div>
-                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-white text-xl"></i>
-                    </div>
+            
+            <div class="stat-card orange">
+                <div class="stat-icon orange">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value"><?php echo $produtosEstoque['total']; ?></div>
+                    <div class="stat-label">Produtos em estoque</div>
                 </div>
             </div>
         </div>
-
-        <!-- Charts and Recent Activity -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Sales Chart -->
-            <div class="lg:col-span-2 chart-container rounded-lg">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Vendas dos Últimos 7 Dias</h3>
-                <div class="h-64 bg-gray-50 dark:bg-gray-800 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-600">
-                    <div class="text-center">
-                        <i class="fas fa-chart-bar text-4xl text-gray-400 dark:text-gray-500 mb-2"></i>
-                        <p class="text-gray-500 dark:text-gray-400">Gráfico de vendas será implementado</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="chart-container rounded-lg">
-                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Atividade Recente</h3>
-                <div class="recent-activity">
+        
+        <!-- Content Grid -->
+        <div class="grid-2">
+            <!-- Atividade Recente -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-clock"></i>
+                    Atividade Recente
+                </h2>
+                <div class="activity-list">
                     <?php if (empty($atividades)): ?>
-                        <div class="text-center py-8">
-                            <i class="fas fa-info-circle text-2xl text-gray-400 dark:text-gray-500 mb-2"></i>
-                            <p class="text-gray-500 dark:text-gray-400">Nenhuma atividade recente</p>
-                        </div>
+                        <p class="text-gray-500 text-center py-4">Nenhuma atividade recente</p>
                     <?php else: ?>
                         <?php foreach ($atividades as $atividade): ?>
                             <div class="activity-item">
-                                <div class="flex items-start">
-                                    <div class="w-2 h-2 bg-otica-primary rounded-full mt-2 mr-3"></div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-800 dark:text-white"><?php echo htmlspecialchars(ucfirst($atividade['acao'])); ?></p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400"><?php echo htmlspecialchars($atividade['detalhes']); ?></p>
-                                        <p class="text-xs text-gray-400 dark:text-gray-500"><?php echo date('d/m/Y H:i', strtotime($atividade['data'])); ?></p>
-                                    </div>
+                                <div class="activity-icon info">
+                                    <i class="fas fa-info"></i>
                                 </div>
+                                <div class="activity-content">
+                                    <div class="activity-title"><?php echo htmlspecialchars(ucfirst($atividade['acao'])); ?></div>
+                                    <div class="activity-desc"><?php echo htmlspecialchars($atividade['detalhes']); ?></div>
+                                </div>
+                                <div class="activity-time"><?php echo date('H:i', strtotime($atividade['data'])); ?></div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             </div>
+            
+            <!-- Receita Mensal -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-pie"></i>
+                    Receita do Mês
+                </h2>
+                <div class="text-center py-4">
+                    <div class="text-4xl font-extrabold text-darkblue mb-2">
+                        R$ <?php echo number_format($receitaMes['valor'], 2, ',', '.'); ?>
+                    </div>
+                    <p class="text-gray-500">Total de vendas este mês</p>
+                </div>
+            </div>
         </div>
-
+        
         <!-- Quick Actions -->
-        <div class="mt-8">
-            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Ações Rápidas</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <a href="../vendas/nova.php" class="card quick-action-card p-6 text-center hover:bg-otica-primary hover:text-white transition-all duration-300">
-                    <i class="fas fa-plus-circle text-3xl text-otica-primary mb-3 icon"></i>
-                    <h4 class="font-semibold">Nova Venda</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Registrar nova venda</p>
+        <div class="card">
+            <h2 class="card-title">
+                <i class="fas fa-bolt"></i>
+                Ações Rápidas
+            </h2>
+            <div class="quick-actions">
+                <a href="../vendas/nova.php" class="quick-action">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Nova Venda</span>
                 </a>
-
-                <a href="../clientes/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-blue hover:text-white transition-all duration-300">
-                    <i class="fas fa-user-plus text-3xl text-otica-blue mb-3 icon"></i>
-                    <h4 class="font-semibold">Novo Cliente</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar cliente</p>
+                <a href="../clientes/novo.php" class="quick-action">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Novo Cliente</span>
                 </a>
-
-
-              <!--  <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300"> -->
-
-              <!-- <a href="../produtos.php?action=novo" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300"> -->
-
-                <a href="../produtos/novo.php" class="card quick-action-card p-6 text-center hover:bg-otica-indigo hover:text-white transition-all duration-300">
-
-                    <i class="fas fa-box text-3xl text-otica-indigo mb-3 icon"></i>
-                    <h4 class="font-semibold">Novo Produto</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Cadastrar produto</p>
+                <a href="../produtos/novo.php" class="quick-action">
+                    <i class="fas fa-plus-square"></i>
+                    <span>Novo Produto</span>
                 </a>
-
-                <a href="../financeiro/relatorio.php" class="card quick-action-card p-6 text-center hover:bg-otica-emerald hover:text-white transition-all duration-300">
-                    <i class="fas fa-chart-pie text-3xl text-otica-emerald mb-3 icon"></i>
-                    <h4 class="font-semibold">Relatórios</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Gerar relatórios</p>
+                <a href="../receitas/nova.php" class="quick-action">
+                    <i class="fas fa-prescription-bottle"></i>
+                    <span>Nova Receita</span>
                 </a>
             </div>
         </div>
-    </div>
-
-    <!-- Modal de Confirmação -->
-<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg w-full max-w-sm">
-        <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Confirmação</h2>
-        <p class="mb-6 text-gray-600 dark:text-gray-300" id="confirmModalMessage">Tem certeza que deseja sair?</p>
-        <div class="flex justify-end space-x-3">
-            <button onclick="closeConfirmModal()" class="px-4 py-2 rounded bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white">Cancelar</button>
-            <button onclick="confirmModalAction()" class="px-4 py-2 rounded bg-otica-primary text-white font-semibold">Confirmar</button>
-        </div>
-    </div>
-</div>
-
+    </main>
+    
     <script>
-        // Theme management
-        function toggleTheme() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon');
-            const themeButton = document.querySelector('.theme-toggle');
-            
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                html.classList.add('light');
-                themeIcon.className = 'fas fa-moon text-gray-600';
-                localStorage.setItem('theme', 'light');
-                // Remover rotação quando voltar para o tema claro
-                themeButton.classList.remove('rotated');
-            } else {
-                html.classList.remove('light');
-                html.classList.add('dark');
-                themeIcon.className = 'fas fa-sun text-yellow-400';
-                localStorage.setItem('theme', 'dark');
-                // Adicionar rotação quando ativar o tema escuro
-                themeButton.classList.add('rotated');
-            }
-        }
-
-        // Load saved theme
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('theme-icon');
-            
-            html.classList.remove('light', 'dark');
-            html.classList.add(savedTheme);
-            
-            if (savedTheme === 'dark') {
-                themeIcon.className = 'fas fa-sun text-yellow-400';
-            } else {
-                themeIcon.className = 'fas fa-moon text-gray-600';
-            }
-        }
-
-        // Toggle sidebar on mobile
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Logout function
         function logout() {
             if (confirm('Tem certeza que deseja sair?')) {
-                window.location.href = '../../controllers/LoginController.php?action=logout';
+                window.location.href = '../login.php?action=logout';
             }
-        }
-
-        // Confirm modal functions
-        let confirmModalCallback = null;
-
-        function showConfirmModal(message, callback) {
-            document.getElementById('confirmModalMessage').textContent = message;
-            document.getElementById('confirmModal').classList.remove('hidden');
-            confirmModalCallback = callback;
-        }
-
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            confirmModalCallback = null;
-        }
-
-        function confirmModalAction() {
-            if (typeof confirmModalCallback === 'function') {
-                confirmModalCallback();
-            }
-            closeConfirmModal();
-        }
-
-        // Add active class to current menu item
-        document.addEventListener('DOMContentLoaded', function() {
-            loadTheme();
-            
-            const currentPath = window.location.pathname;
-            const menuItems = document.querySelectorAll('.sidebar-item');
-            
-            menuItems.forEach(item => {
-                const href = item.getAttribute('href');
-                if (href && currentPath.includes(href)) {
-                    item.classList.add('active');
-                }
-            });
-        });
-
-        // Auto-refresh stats every 30 seconds
-        setInterval(function() {
-            location.reload();
-        }, 30000);
-
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
-                type === 'success' ? 'bg-green-500' : 
-                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-            }`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
         }
     </script>
 </body>

@@ -1,276 +1,94 @@
 <?php
-//<<<<<< HEAD
-//=======//
-
-//>>>>>>> 93b7f173bb88ccd61deb752171d76889a39e6c9d
 require_once '../../includes/auth_check.php';
 require_once '../../config/database.php';
+require_once '../../config/database_compatibility.php';
 
 $db = Database::getInstance()->getConnection();
 
-// Buscar produtos
-$stmt = $db->query("SELECT * FROM produtos ORDER BY nome");
-$produtos = $stmt->fetchAll();
+$pageTitle = 'Produtos';
+$moduleName = 'Gerencie seus produtos';
+
+try {
+    $stmt = $db->query("SELECT * FROM produtos ORDER BY nome");
+    $produtos = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log("Erro: " . $e->getMessage());
+    $produtos = [];
+}
+
+include '../layout_base.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciar Produtos - Wiz Ótica</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center">
-                        <h1 class="text-2xl font-bold text-gray-900">Produtos</h1>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <a href="novo.php" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
-                            <i class="fas fa-plus mr-2"></i>
-                            Novo Produto
-                        </a>
-
-                        <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
-
-                        <a href="../views/admin/index.php" class="text-gray-600 hover:text-gray-900">
-
-                        <a href="../admin/index.php" class="text-gray-600 hover:text-gray-900">
-
-                            <i class="fas fa-arrow-left mr-1"></i>
-                            Voltar
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-            <!-- Feedback Messages -->
-            <?php if (isset($_GET['success'])): ?>
-                <?php if ($_GET['success'] == 'excluido'): ?>
-                    <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            <span>Produto excluído com sucesso!</span>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            <span>Operação realizada com sucesso!</span>
-                        </div>
-                    </div>
-                <?php endif; ?>
-            <?php endif; ?>
-
-            <?php if (isset($_GET['error'])): ?>
-                <?php 
-                $errorMessages = [
-                    'id_invalido' => 'ID do produto inválido.',
-                    'produto_nao_encontrado' => 'Produto não encontrado.',
-                    'produto_tem_vendas' => 'Não é possível excluir este produto pois ele possui vendas associadas.',
-                    'produto_tem_movimentacoes' => 'Não é possível excluir este produto pois ele possui movimentações de estoque associadas.',
-                    'erro_exclusao' => 'Erro ao excluir o produto.',
-                    'erro_sistema' => 'Erro interno do sistema. Tente novamente.'
-                ];
-                $errorMessage = $errorMessages[$_GET['error']] ?? 'Erro desconhecido.';
-                ?>
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                    <div class="flex items-center">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <span><?php echo $errorMessage; ?></span>
-                    </div>
-                </div>
-            <?php endif; ?>
-
-            <!-- Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-blue-100 rounded-lg">
-                            <i class="fas fa-box text-blue-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total de Produtos</p>
-                            <p class="text-2xl font-bold text-gray-900"><?= count($produtos) ?></p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-green-100 rounded-lg">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Em Estoque</p>
-                            <p class="text-2xl font-bold text-gray-900">
-
-                                <?= count(array_filter($produtos, function($p) { 
-                                    $estoque = $p['estoque'] ?? $p['estoque_atual'] ?? 0;
-                                    return $estoque > 0; 
-                                })) ?>
-
-                                <?= count(array_filter($produtos, function($p) { return $p['estoque'] > 0; })) ?>
-
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-red-100 rounded-lg">
-                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Sem Estoque</p>
-                            <p class="text-2xl font-bold text-gray-900">
-
-                                <?= count(array_filter($produtos, function($p) { 
-                                    $estoque = $p['estoque'] ?? $p['estoque_atual'] ?? 0;
-                                    return $estoque <= 0; 
-                                })) ?>
-
-                                <?= count(array_filter($produtos, function($p) { return $p['estoque'] <= 0; })) ?>
-
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-2 bg-yellow-100 rounded-lg">
-                            <i class="fas fa-tags text-yellow-600 text-xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Tipos</p>
-                            <p class="text-2xl font-bold text-gray-900">
-                                <?= count(array_unique(array_filter(array_column($produtos, 'tipo')))) ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Products Table -->
-            <div class="bg-white shadow rounded-lg">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-medium text-gray-900">Lista de Produtos</h2>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estoque</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php if (empty($produtos)): ?>
-                                <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                        Nenhum produto cadastrado
-                                    </td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($produtos as $produto): ?>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    <?= htmlspecialchars($produto['nome']) ?>
-                                                </div>
-                                                <?php if (!empty($produto['descricao'])): ?>
-                                                    <div class="text-sm text-gray-500">
-                                                        <?= htmlspecialchars(substr($produto['descricao'], 0, 50)) ?>...
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <?= htmlspecialchars($produto['tipo'] ?? 'Sem tipo') ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-
-                                            <?php 
-                                            $estoque = $produto['estoque'] ?? $produto['estoque_atual'] ?? 0;
-                                            ?>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                                <?= $estoque > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                                                <?= $estoque ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            R$ <?= number_format($produto['preco_venda'], 2, ',', '.') ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="visualizar.php?id=<?= $produto['id'] ?>" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Visualizar">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="../produtos.php?action=editar&id=<?= $produto['id'] ?>" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="../../produtos.php?action=excluir&id=<?= $produto['id'] ?>" 
-                                                   class="text-red-600 hover:text-red-900" title="Excluir"
-
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                                <?= $estoque > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' ?>">
-                                                <?= $estoque ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            R$ <?= number_format($produto['preco_venda'], 2, ',', '.') ?>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <div class="flex space-x-2">
-                                                <a href="visualizar.php?id=<?= $produto['id'] ?>" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Visualizar">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="../produtos.php?action=editar&id=<?= $produto['id'] ?>" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Editar">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="../../produtos.php?action=excluir&id=<?= $produto['id'] ?>" 
-                                                   class="text-red-600 hover:text-red-900" title="Excluir"
-                                                   onclick="return confirm('Tem certeza que deseja excluir este produto?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+<div class="card">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="card-title">
+            <i class="fas fa-box"></i>
+            Lista de Produtos
+        </h2>
+        <a href="novo.php" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            Novo Produto
+        </a>
     </div>
+    
+    <?php if (empty($produtos)): ?>
+    <div class="empty-state">
+        <i class="fas fa-box"></i>
+        <h3>Nenhum produto cadastrado</h3>
+        <p>Comece adicionando seu primeiro produto.</p>
+        <a href="novo.php" class="btn btn-primary mt-4">
+            <i class="fas fa-plus"></i>
+            Cadastrar Produto
+        </a>
+    </div>
+    <?php else: ?>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Marca</th>
+                    <th>Preço</th>
+                    <th>Estoque</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($produtos as $produto): ?>
+                <tr>
+                    <td><?php echo $produto['id']; ?></td>
+                    <td class="font-semibold"><?php echo htmlspecialchars($produto['nome']); ?></td>
+                    <td><?php echo htmlspecialchars($produto['tipo'] ?? '-'); ?></td>
+                    <td><?php echo htmlspecialchars($produto['marca'] ?? '-'); ?></td>
+                    <td>R$ <?php echo number_format($produto['preco'] ?? 0, 2, ',', '.'); ?></td>
+                    <td>
+                        <?php if (($produto['estoque'] ?? 0) > 0): ?>
+                        <span class="badge badge-success"><?php echo $produto['estoque']; ?> un</span>
+                        <?php else: ?>
+                        <span class="badge badge-danger">Sem estoque</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="visualizar.php?id=<?php echo $produto['id']; ?>" class="btn-icon" title="Visualizar">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="novo.php?id=<?php echo $produto['id']; ?>" class="btn-icon" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="excluir.php?id=<?php echo $produto['id']; ?>" class="btn-icon danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir este produto?');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+</div>
 
-
-</body>
-</html>
+<?php include '../layout_end.php'; ?>

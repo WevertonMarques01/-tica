@@ -12,11 +12,12 @@ class Cliente extends BaseModel
     }
     
     public function getNovosClientesHoje(): int {
-    $sql = "SELECT COUNT(*) AS qtd 
-            FROM clientes 
-            WHERE DATE(data_cadastro) = CURDATE()";
-    return (int)($this->db->query($sql)->fetchColumn() ?? 0);
-}
+        $col = DB::getColumn('clientes', 'criado_em', 'created_at');
+        $sql = "SELECT COUNT(*) AS qtd 
+                FROM clientes 
+                WHERE DATE($col) = CURDATE()";
+        return (int)($this->db->query($sql)->fetchColumn() ?? 0);
+    }
 
     
     /**
@@ -24,9 +25,6 @@ class Cliente extends BaseModel
      */
     public function update($data)
     {
-        // Adicionar data de atualização
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        
         return parent::update($data);
     }
     
@@ -35,7 +33,8 @@ class Cliente extends BaseModel
      */
     public function getByDocumento($documento)
     {
-        return $this->find(['documento' => $documento], null, 1);
+        $col = DB::getColumn('clientes', 'cpf', 'documento');
+        return $this->find([$col => $documento], null, 1);
     }
     
     /**

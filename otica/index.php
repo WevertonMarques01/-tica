@@ -1007,23 +1007,7 @@
     </style>
 </head>
 <body>
-    <!-- Elementos flutuantes -->
-    <div class="floating-elements">
-        <div class="leaf" style="top: -10%; left: 10%; animation-delay: 0s;"></div>
-        <div class="leaf" style="top: -10%; left: 80%; animation-delay: -3s;"></div>
-        <div class="leaf" style="top: -10%; left: 20%; animation-delay: -6s;"></div>
-        <div class="leaf" style="top: -10%; left: 70%; animation-delay: -9s;"></div>
-        <div class="leaf" style="top: -10%; left: 90%; animation-delay: -12s;"></div>
-        <div class="leaf" style="top: -10%; left: 40%; animation-delay: -15s;"></div>
-        <div class="leaf" style="top: -10%; left: 60%; animation-delay: -18s;"></div>
-        <div class="leaf" style="top: -10%; left: 30%; animation-delay: -21s;"></div>
-
-        <!-- Nuvens flutuantes -->
-        <div class="otica-cloud small" style="top: 20%; animation-delay: 0s;"></div>
-        <div class="otica-cloud small" style="top: 60%; animation-delay: -10s;"></div>
-        <div class="otica-cloud small" style="top: 40%; animation-delay: -20s;"></div>
-    </div>
-
+   
     <!-- Header -->
     <header class="header">
         <a href="#" class="logo">Wiz Óptica</a>
@@ -1304,7 +1288,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3><i class="fas fa-leaf leaf-icon"></i>Wiz Òptica</h3>
-                    <p>© 2025 Wiz Óptica. Todos os direitos reservados. Uma ótica onde a qualidade e o cuidado com sua visão são nossa prioridade. Praça Desembargador Pontes Viera,227 (Shopping Maktub - 1º Piso, LOJA 10, Maranguape - CE, 61940-165</p>
+                    <p>© 2026 Wiz Óptica. Todos os direitos reservados. Uma ótica onde a qualidade e o cuidado com sua visão são nossa prioridade. Praça Desembargador Pontes Viera,227 (Shopping Maktub - 1º Piso, LOJA 10, Maranguape - CE, 61940-165</p>
                     <i class="fas fa-leaf leaf-icon"></i>
                 </div>
                 
@@ -1325,7 +1309,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>© 2025 Wiz Óptica. A óptica que vai até você.</p>
+                <p>© 2026 Wiz Óptica. A óptica que vai até você.</p>
             </div>
         </div>
     </footer>
@@ -1366,7 +1350,7 @@
             card.style.transform = 'translateY(30px)';
             card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             observer.observe(card);
-        });
+        }); 
 
         // Criar sparkles dinamicamente
         function createSparkle() {

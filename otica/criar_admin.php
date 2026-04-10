@@ -66,7 +66,7 @@ try {
         echo "<hr>";
         echo "<h3>👥 Usuários Cadastrados:</h3>";
         
-                 $stmt = $pdo->query("SELECT id, nome, email, perfil, ativo, created_at FROM usuarios ORDER BY id");
+                 $stmt = $pdo->query("SELECT id, nome, email, perfil, ativo, criado_em as created_at FROM usuarios ORDER BY id");
         $usuarios = $stmt->fetchAll();
         
         if (count($usuarios) > 0) {
