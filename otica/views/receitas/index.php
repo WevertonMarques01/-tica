@@ -80,12 +80,6 @@ include '../layout_base.php';
                     <td><?php echo $r['data_receita'] ? date('d/m/Y', strtotime($r['data_receita'])) : '-'; ?></td>
                     <td>
                         <div class="actions">
-<<<<<<< Updated upstream
-=======
-                            <a href="imprimir.php?id=<?php echo $r['id']; ?>" target="_blank" class="btn-icon success" title="Imprimir">
-                                <i class="fas fa-print"></i>
-                            </a>
->>>>>>> Stashed changes
                             <a href="excluir.php?id=<?php echo $r['id']; ?>" class="btn-icon danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta receita?');">
                                 <i class="fas fa-trash"></i>
                             </a>

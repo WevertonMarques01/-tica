@@ -147,9 +147,6 @@ try {
                         </h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="imprimir.php?id=<?php echo $cliente['id']; ?>" target="_blank" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors">
-                            <i class="fas fa-print mr-2"></i>Imprimir
-                        </a>
                         <a href="editar.php?id=<?php echo $cliente['id']; ?>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
                             <i class="fas fa-edit mr-2"></i>Editar
                         </a>
