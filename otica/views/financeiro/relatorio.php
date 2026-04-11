@@ -30,7 +30,11 @@ include '../layout_base.php';
 ?>
 
 <div class="card">
+<<<<<<< Updated upstream
     <form method="GET" class="flex gap-4 mb-6">
+=======
+    <form method="GET" class="flex gap-4 mb-4">
+>>>>>>> Stashed changes
         <div class="form-group" style="margin-bottom: 0; flex: 1;">
             <label for="data_inicio" class="form-label">Data Início</label>
             <input type="date" name="data_inicio" id="data_inicio" class="form-input" value="<?php echo $data_inicio; ?>">
@@ -39,14 +43,36 @@ include '../layout_base.php';
             <label for="data_fim" class="form-label">Data Fim</label>
             <input type="date" name="data_fim" id="data_fim" class="form-input" value="<?php echo $data_fim; ?>">
         </div>
+<<<<<<< Updated upstream
         <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+=======
+        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end; gap: 8px;">
+>>>>>>> Stashed changes
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search"></i>
                 Filtrar
             </button>
+<<<<<<< Updated upstream
         </div>
     </form>
     
+=======
+            <a href="imprimir.php?data_inicio=<?php echo $data_inicio; ?>&data_fim=<?php echo $data_fim; ?>" target="_blank" class="btn btn-success">
+                <i class="fas fa-print"></i>
+                Imprimir
+            </a>
+        </div>
+    </form>
+    
+    <div class="flex gap-2 mb-6">
+        <a href="?data_inicio=<?php echo date('Y-m-d'); ?>&data_fim=<?php echo date('Y-m-d'); ?>" class="text-sm text-blue-600 hover:underline">Hoje</a>
+        <span class="text-gray-300">|</span>
+        <a href="?data_inicio=<?php echo date('Y-m-01'); ?>&data_fim=<?php echo date('Y-m-t'); ?>" class="text-sm text-blue-600 hover:underline">Este Mês</a>
+        <span class="text-gray-300">|</span>
+        <a href="?data_inicio=<?php echo date('Y-01-01'); ?>&data_fim=<?php echo date('Y-12-31'); ?>" class="text-sm text-blue-600 hover:underline">Este Ano</a>
+    </div>
+    
+>>>>>>> Stashed changes
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="stat-card blue" style="padding: 1.25rem;">
             <div class="flex items-center gap-3">

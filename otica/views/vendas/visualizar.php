@@ -157,7 +157,11 @@ try {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Valor Total</label>
                         <p class="mt-1 text-lg font-semibold text-green-600">
+<<<<<<< Updated upstream
                             R$ <?php echo number_format($venda['total'] ?? 0, 2, ',', '.'); ?>
+=======
+                            R$ <?php echo number_format($venda['total'], 2, ',', '.'); ?>
+>>>>>>> Stashed changes
                         </p>
                     </div>
                     <div>
