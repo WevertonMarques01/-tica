@@ -16,7 +16,7 @@ $db = Database::getInstance()->getConnection();
 
 try {
     // Verificar se o cliente existe
-    $stmt = $db->prepare("SELECT id, nome, documento FROM clientes WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, nome, cpf FROM clientes WHERE id = ?");
     $stmt->execute([$id]);
     $cliente = $stmt->fetch();
     
@@ -30,7 +30,7 @@ try {
     $stmtVendas->execute([$id]);
     $vendasRelacionadas = $stmtVendas->fetch();
     
-    if ($vendasRelacionadas['total'] > 0) {
+    if ($vendasRelacionadas && $vendasRelacionadas['total'] > 0) {
         header('Location: index.php?error=cliente_tem_vendas');
         exit;
     }
@@ -41,7 +41,7 @@ try {
         $stmtReceitas->execute([$id]);
         $receitasRelacionadas = $stmtReceitas->fetch();
         
-        if ($receitasRelacionadas['total'] > 0) {
+        if ($receitasRelacionadas && $receitasRelacionadas['total'] > 0) {
             header('Location: index.php?error=cliente_tem_receitas');
             exit;
         }
@@ -56,7 +56,7 @@ try {
         $stmtOrdens->execute([$id]);
         $ordensRelacionadas = $stmtOrdens->fetch();
         
-        if ($ordensRelacionadas['total'] > 0) {
+        if ($ordensRelacionadas && $ordensRelacionadas['total'] > 0) {
             header('Location: index.php?error=cliente_tem_ordens');
             exit;
         }
@@ -70,9 +70,9 @@ try {
     $result = $stmt->execute([$id]);
     
     if ($result) {
-        // Registrar log (se a tabela logs_sistema existir)
+        // Registrar log (se a tabela logs existir)
         try {
-            $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+            $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
             $logStmt->execute([$_SESSION['usuario_id'], 'cliente_excluido', "Cliente ID: $id ({$cliente['nome']}) excluído"]);
         } catch (PDOException $e) {
             // Se a tabela de logs não existir, continua sem registrar

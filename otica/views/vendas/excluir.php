@@ -16,7 +16,7 @@ $db = Database::getInstance()->getConnection();
 
 try {
     // Verificar se a venda existe
-    $stmt = $db->prepare("SELECT id, cliente_id, valor_total FROM vendas WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, cliente_id, total FROM vendas WHERE id = ?");
     $stmt->execute([$id]);
     $venda = $stmt->fetch();
     
@@ -26,17 +26,26 @@ try {
     }
     
     // Verificar se há itens de venda relacionados e excluí-los primeiro
-    $stmtItens = $db->prepare("DELETE FROM itens_venda WHERE venda_id = ?");
+    $stmtItens = $db->prepare("DELETE FROM venda_produtos WHERE venda_id = ?");
     $stmtItens->execute([$id]);
+    
+    // Verificar se há registros no financeiro e excluí-los
+    try {
+        $stmtFinanceiro = $db->prepare("DELETE FROM financeiro WHERE venda_id = ?");
+        $stmtFinanceiro->execute([$id]);
+    } catch (PDOException $e) {
+        // Tabela financeiro pode não existir ou não ter a coluna venda_id
+        error_log("Aviso: Falha ao excluir do financeiro: " . $e->getMessage());
+    }
     
     // Excluir a venda
     $stmt = $db->prepare("DELETE FROM vendas WHERE id = ?");
     $result = $stmt->execute([$id]);
     
     if ($result) {
-        // Registrar log (se a tabela logs_sistema existir)
+        // Registrar log (se a tabela logs existir)
         try {
-            $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
+            $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes) VALUES (?, ?, ?)");
             $logStmt->execute([$_SESSION['usuario_id'], 'venda_excluida', "Venda ID: $id excluída"]);
         } catch (PDOException $e) {
             // Se a tabela de logs não existir, continua sem registrar

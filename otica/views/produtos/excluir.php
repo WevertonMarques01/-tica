@@ -44,7 +44,7 @@ try {
     // Verificar se há vendas relacionadas ao produto
     $temVendasRelacionadas = false;
     try {
-        $stmtVendas = $db->prepare("SELECT COUNT(*) as total FROM itens_venda WHERE produto_id = ?");
+        $stmtVendas = $db->prepare("SELECT COUNT(*) as total FROM venda_produtos WHERE produto_id = ?");
         $stmtVendas->execute([$id]);
         $vendasRelacionadas = $stmtVendas->fetch();
         
@@ -53,8 +53,7 @@ try {
             $temVendasRelacionadas = true;
         }
     } catch (PDOException $e) {
-        // Tabela itens_venda pode não existir
-        error_log("Aviso: Tabela itens_venda não encontrada: " . $e->getMessage());
+        error_log("Aviso: Tabela venda_produtos não encontrada: " . $e->getMessage());
     }
     
     if ($temVendasRelacionadas) {
@@ -102,9 +101,9 @@ try {
         
         error_log("Produto ID $id excluído com sucesso. Linhas afetadas: $linhasAfetadas");
         
-        // Registrar log (se a tabela logs_sistema existir)
+        // Registrar log (se a tabela logs existir)
         try {
-            $logStmt = $db->prepare("INSERT INTO logs_sistema (usuario_id, acao, detalhes, created_at) VALUES (?, ?, ?, NOW())");
+            $logStmt = $db->prepare("INSERT INTO logs (usuario_id, acao, detalhes, data) VALUES (?, ?, ?, NOW())");
             $logResult = $logStmt->execute([
                 $_SESSION['usuario_id'], 
                 'produto_excluido', 

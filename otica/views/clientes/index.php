@@ -20,6 +20,31 @@ include '../layout_base.php';
 ?>
 
 <div class="card">
+    <?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success mb-4" style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 10px; border: 1px solid #bbf7d0;">
+        <i class="fas fa-check-circle mr-2"></i>
+        <?php 
+            if($_GET['success'] == 'excluido') echo "Cliente excluído com sucesso!";
+            else echo "Operação realizada com sucesso!";
+        ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+    <div class="alert alert-error mb-4" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 10px; border: 1px solid #fecaca;">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        <?php 
+            if($_GET['error'] == 'id_invalido') echo "ID de cliente inválido.";
+            elseif($_GET['error'] == 'cliente_nao_encontrado') echo "Cliente não encontrado.";
+            elseif($_GET['error'] == 'cliente_tem_vendas') echo "Não é possível excluir este cliente pois ele possui vendas registradas.";
+            elseif($_GET['error'] == 'cliente_tem_receitas') echo "Não é possível excluir este cliente pois ele possui receitas registradas.";
+            elseif($_GET['error'] == 'cliente_tem_ordens') echo "Não é possível excluir este cliente pois ele possui ordens de serviço registradas.";
+            elseif($_GET['error'] == 'erro_exclusao') echo "Erro ao excluir o cliente.";
+            else echo "Ocorreu um erro no sistema. Tente novamente.";
+        ?>
+    </div>
+    <?php endif; ?>
+
     <div class="flex justify-between items-center mb-4">
         <h2 class="card-title">
             <i class="fas fa-users"></i>

@@ -35,11 +35,11 @@ try {
     
     // Contar vendas
     try {
-        $stmtVendas = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(valor_total), 0) as valor_total FROM vendas WHERE cliente_id = ?");
+        $stmtVendas = $db->prepare("SELECT COUNT(*) as total, COALESCE(SUM(total), 0) as valor_total FROM vendas WHERE cliente_id = ?");
         $stmtVendas->execute([$id]);
         $vendas = $stmtVendas->fetch();
-        $estatisticas['vendas'] = $vendas['total'];
-        $estatisticas['valor_total_vendas'] = $vendas['valor_total'];
+        $estatisticas['vendas'] = $vendas['total'] ?? 0;
+        $estatisticas['valor_total_vendas'] = $vendas['valor_total'] ?? 0;
     } catch (PDOException $e) {
         error_log("Aviso: Erro ao buscar vendas: " . $e->getMessage());
     }

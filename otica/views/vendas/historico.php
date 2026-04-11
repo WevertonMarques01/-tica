@@ -20,6 +20,28 @@ include '../layout_base.php';
 ?>
 
 <div class="card">
+    <?php if (isset($_GET['success'])): ?>
+    <div class="alert alert-success mb-4" style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 10px; border: 1px solid #bbf7d0;">
+        <i class="fas fa-check-circle mr-2"></i>
+        <?php 
+            if($_GET['success'] == 'excluida') echo "Venda excluída com sucesso!";
+            else echo "Operação realizada com sucesso!";
+        ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+    <div class="alert alert-error mb-4" style="background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 10px; border: 1px solid #fecaca;">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        <?php 
+            if($_GET['error'] == 'id_invalido') echo "ID de venda inválido.";
+            elseif($_GET['error'] == 'venda_nao_encontrada') echo "Venda não encontrada.";
+            elseif($_GET['error'] == 'erro_exclusao') echo "Erro ao excluir a venda.";
+            else echo "Ocorreu um erro no sistema. Tente novamente.";
+        ?>
+    </div>
+    <?php endif; ?>
+
     <div class="flex justify-between items-center mb-4">
         <h2 class="card-title">
             <i class="fas fa-history"></i>

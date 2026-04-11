@@ -32,17 +32,17 @@ try {
         'valor_total_vendas' => 0
     ];
     
-    // Contar vendas (se existir tabela itens_venda)
+    // Contar vendas (usando a tabela venda_produtos)
     try {
         $stmtVendas = $db->prepare("
-            SELECT COUNT(*) as total, COALESCE(SUM(iv.quantidade * iv.preco), 0) as valor_total 
-            FROM itens_venda iv 
-            WHERE iv.produto_id = ?
+            SELECT COUNT(*) as total, COALESCE(SUM(vp.quantidade * vp.preco_unitario), 0) as valor_total 
+            FROM venda_produtos vp 
+            WHERE vp.produto_id = ?
         ");
         $stmtVendas->execute([$id]);
         $vendas = $stmtVendas->fetch();
-        $estatisticas['vendas'] = $vendas['total'];
-        $estatisticas['valor_total_vendas'] = $vendas['valor_total'];
+        $estatisticas['vendas'] = $vendas['total'] ?? 0;
+        $estatisticas['valor_total_vendas'] = $vendas['valor_total'] ?? 0;
     } catch (PDOException $e) {
         error_log("Aviso: Erro ao buscar vendas: " . $e->getMessage());
     }

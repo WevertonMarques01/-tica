@@ -157,7 +157,7 @@ try {
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Valor Total</label>
                         <p class="mt-1 text-lg font-semibold text-green-600">
-                            R$ <?php echo number_format($venda['valor_total'], 2, ',', '.'); ?>
+                            R$ <?php echo number_format($venda['total'] ?? 0, 2, ',', '.'); ?>
                         </p>
                     </div>
                     <div>
@@ -241,17 +241,10 @@ try {
                                     <?php echo $item['quantidade']; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-<<<<<<< HEAD
-                                    R$ <?php echo number_format($item['preco_venda'], 2, ',', '.'); ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    R$ <?php echo number_format($item['quantidade'] * $item['preco'], 2, ',', '.'); ?>
-=======
                                     R$ <?php echo number_format($item['preco_unitario'], 2, ',', '.'); ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                    R$ <?php echo number_format($item['quantidade'] * $item['subtotal'], 2, ',', '.'); ?>
->>>>>>> a40cc3c33f5ddb4520c325dc233fb28caee38e34
+                                    R$ <?php echo number_format($item['quantidade'] * $item['preco_unitario'], 2, ',', '.'); ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -260,6 +253,7 @@ try {
                 </div>
             </div>
             <?php endif; ?>
+
 
             <!-- Observações -->
             <?php if (!empty($venda['observacoes'])): ?>
