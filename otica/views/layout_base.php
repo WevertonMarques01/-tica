@@ -424,6 +424,14 @@ $currentModule = $moduleName ?? '';
                     <i class="fas fa-plus-circle"></i>
                     <span>Nova Receita</span>
                 </a>
+                <a href="../agendamentos/index.php" class="menu-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Agendamentos</span>
+                </a>
+                <a href="../agendamentos/novo.php" class="menu-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Novo Agendamento</span>
+                </a>
             </div>
             
             <div class="menu-group">
