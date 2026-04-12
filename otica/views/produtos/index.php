@@ -19,6 +19,27 @@ try {
 include '../layout_base.php';
 ?>
 
+<script>
+function filtrarTabela() {
+    var input = document.getElementById('busca');
+    var filter = input.value.toLowerCase();
+    var table = document.querySelector('.table');
+    var rows = table.getElementsByTagName('tr');
+    
+    for (var i = 1; i < rows.length; i++) {
+        var nomeCell = rows[i].cells[1];
+        if (nomeCell) {
+            var nome = nomeCell.textContent || nomeCell.innerText;
+            if (nome.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+</script>
+
 <div class="card">
     <?php if (isset($_GET['success'])): ?>
     <div class="alert alert-success mb-4" style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 10px; border: 1px solid #bbf7d0;">
@@ -54,6 +75,10 @@ include '../layout_base.php';
             Novo Produto
         </a>
     </div>
+
+    <div class="mb-4">
+        <input type="text" id="busca" class="input" placeholder="Buscar produto por nome..." onkeyup="filtrarTabela()">
+    </div>
     
     <?php if (empty($produtos)): ?>
     <div class="empty-state">
@@ -79,7 +104,7 @@ include '../layout_base.php';
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tabela-produtos">
                 <?php foreach ($produtos as $produto): ?>
                 <tr>
                     <td><?php echo $produto['id']; ?></td>

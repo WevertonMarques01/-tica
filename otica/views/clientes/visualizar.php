@@ -64,6 +64,22 @@ try {
         error_log("Aviso: Tabela ordens_servico não encontrada: " . $e->getMessage());
     }
     
+    // Buscar comprovantes de pagamento
+    try {
+        $stmtComprovantes = $db->prepare("
+            SELECT * FROM comprovantes_pagamento 
+            WHERE cliente_id = ? 
+            ORDER BY criado_em DESC
+            LIMIT 5
+        ");
+        $stmtComprovantes->execute([$id]);
+        $comprovantes = $stmtComprovantes->fetchAll();
+        $estatisticas['comprovantes'] = count($comprovantes);
+    } catch (PDOException $e) {
+        $comprovantes = [];
+        $estatisticas['comprovantes'] = 0;
+    }
+    
 } catch (PDOException $e) {
     error_log("Erro ao buscar cliente: " . $e->getMessage());
     header('Location: index.php?error=erro_sistema');
@@ -150,9 +166,9 @@ try {
                         <a href="editar.php?id=<?php echo $cliente['id']; ?>" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors">
                             <i class="fas fa-edit mr-2"></i>Editar
                         </a>
-                        <button onclick="window.print()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md font-medium transition-colors">
+                        <a href="imprimir.php?id=<?php echo $cliente['id']; ?>" target="_blank" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-medium transition-colors">
                             <i class="fas fa-print mr-2"></i>Imprimir
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -203,6 +219,17 @@ try {
                         <div class="ml-4">
                             <h3 class="text-sm font-medium">Ordens de Serviço</h3>
                             <p class="text-2xl font-bold"><?php echo $estatisticas['ordens_servico']; ?></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6 bg-cyan-600 text-white">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-file-invoice-dollar text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium">Comprovantes</h3>
+                            <p class="text-2xl font-bold"><?php echo $estatisticas['comprovantes']; ?></p>
                         </div>
                     </div>
                 </div>
@@ -348,6 +375,75 @@ try {
                     </div>
                 </div>
             </div>
+
+            <!-- Comprovantes de Pagamento -->
+            <?php if (!empty($comprovantes)): ?>
+            <div class="card p-6 mt-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                        <i class="fas fa-file-invoice-dollar mr-2"></i>
+                        Comprovantes de Pagamento Recentes
+                    </h2>
+                    <a href="../comprovantes/index.php?cliente_id=<?php echo $cliente['id']; ?>" class="text-blue-600 hover:text-blue-800 text-sm">
+                        Ver todos <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Arquivo</th>
+                                <th>Valor</th>
+                                <th>Descrição</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($comprovantes as $comp): ?>
+                            <tr>
+                                <td>
+                                    <a href="../../uploads/comprovantes/<?php echo $comp['nome_arquivo']; ?>" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-file-<?php echo strpos($comp['tipo_arquivo'], 'pdf') !== false ? 'pdf' : 'image'; ?>"></i>
+                                        <?php echo htmlspecialchars($comp['nome_original']); ?>
+                                    </a>
+                                </td>
+                                <td><?php echo $comp['valor_pagamento'] ? 'R$ ' . number_format($comp['valor_pagamento'], 2, ',', '.') : '-'; ?></td>
+                                <td><?php echo htmlspecialchars($comp['descricao'] ?? '-'); ?></td>
+                                <td><?php echo date('d/m/Y H:i', strtotime($comp['criado_em'])); ?></td>
+                                <td>
+                                    <a href="../comprovantes/visualizar.php?id=<?php echo $comp['id']; ?>" class="btn-icon" title="Visualizar">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    <a href="../comprovantes/novo.php?cliente_id=<?php echo $cliente['id']; ?>" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus mr-2"></i>
+                        Adicionar Comprovante
+                    </a>
+                </div>
+            </div>
+            <?php else: ?>
+            <div class="card p-6 mt-8">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <i class="fas fa-file-invoice-dollar mr-2"></i>
+                    Comprovantes de Pagamento
+                </h2>
+                <div class="text-center py-8">
+                    <i class="fas fa-file-invoice-dollar text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 mb-4">Nenhum comprovante de pagamento registrado</p>
+                    <a href="../comprovantes/novo.php?cliente_id=<?php echo $cliente['id']; ?>" class="btn btn-primary">
+                        <i class="fas fa-plus mr-2"></i>
+                        Adicionar Primeiro Comprovante
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>
