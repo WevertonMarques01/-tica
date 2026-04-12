@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
+<<<<<<<< HEAD:otica_db (3).sql
 -- Tempo de geração: 12-Abr-2026 às 17:25
+========
+-- Tempo de geração: 12-Abr-2026 às 15:52
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 -- Versão do servidor: 10.4.32-MariaDB
 -- versão do PHP: 8.2.12
 
@@ -44,8 +48,12 @@ CREATE TABLE `agendamentos` (
 --
 
 INSERT INTO `agendamentos` (`id`, `cliente_id`, `data_consulta`, `hora_consulta`, `tipo_consulta`, `status`, `observacoes`, `criado_em`, `atualizado_em`) VALUES
+<<<<<<<< HEAD:otica_db (3).sql
 (1, 1, '2026-04-12', '11:30:00', 'Exame de Vista', 'concluido', 'cuida', '2026-04-12 13:04:05', '2026-04-12 13:23:00'),
 (2, 4, '2026-04-13', '16:00:00', 'Exame de Vista', 'agendado', 'asdasdasdas', '2026-04-12 14:50:51', NULL);
+========
+(1, 1, '2026-04-12', '11:30:00', 'Exame de Vista', 'concluido', 'cuida', '2026-04-12 13:04:05', '2026-04-12 13:23:00');
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 
 -- --------------------------------------------------------
 
@@ -72,6 +80,7 @@ CREATE TABLE `clientes` (
 
 INSERT INTO `clientes` (`id`, `nome`, `telefone`, `cpf`, `email`, `data_nascimento`, `criado_em`, `endereco`, `bairro`, `numero`) VALUES
 (1, 'Jefferson Computer', '8598446146', '645.165.750-60', 'jeffersoncomputer58@gmail.com', NULL, '2026-04-10 15:28:54', 'salaberga', '', 5),
+<<<<<<<< HEAD:otica_db (3).sql
 (3, 'cirilo', '1111111111111111111', '000.000.121-21', 'ciriloerafaely@gmail.com', NULL, '2026-04-10 15:52:45', 'salaberga', 'OUTRA BANDA', 0),
 (4, 'rafaely', '(11) 1111-1111', '11.111.111/111', 'rafaely@gamil.com', NULL, '2026-04-12 14:49:21', 'asdasd', 'a', 4);
 
@@ -94,6 +103,9 @@ CREATE TABLE `comprovantes_pagamento` (
   `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
   `atualizado_em` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+========
+(3, 'cirilo', '1111111111111111111', '000.000.121-21', 'ciriloerafaely@gmail.com', NULL, '2026-04-10 15:52:45', 'salaberga', 'OUTRA BANDA', 0);
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 
 -- --------------------------------------------------------
 
@@ -255,11 +267,15 @@ CREATE TABLE `vendas` (
 --
 
 INSERT INTO `vendas` (`id`, `cliente_id`, `usuario_id`, `total`, `forma_pagamento`, `data_venda`) VALUES
+<<<<<<<< HEAD:otica_db (3).sql
 (1, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:35:31'),
 (3, 3, 3, 1.00, 'dinheiro', '2026-04-12 14:23:29'),
 (4, 1, 3, 1.00, 'boleto', '2026-04-12 14:26:48'),
 (5, 4, 3, 1.00, 'pix', '2026-04-12 14:49:44'),
 (9, 4, 3, 1.00, 'dinheiro', '2026-04-12 15:21:55');
+========
+(1, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:35:31');
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 
 -- --------------------------------------------------------
 
@@ -281,12 +297,17 @@ CREATE TABLE `venda_produtos` (
 -- Extraindo dados da tabela `venda_produtos`
 --
 
+<<<<<<<< HEAD:otica_db (3).sql
 INSERT INTO `venda_produtos` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`, `retirado`, `data_retirada`) VALUES
 (1, 1, 1, 1, 1.00, 0, NULL),
 (3, 3, 1, 1, 1.00, 0, NULL),
 (4, 4, 1, 1, 1.00, 0, NULL),
 (5, 5, 1, 1, 1.00, 0, NULL),
 (6, 9, 1, 1, 1.00, 1, '2026-04-12 17:21:55');
+========
+INSERT INTO `venda_produtos` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`) VALUES
+(1, 1, 1, 1, 1.00);
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 
 --
 -- Índices para tabelas despejadas
@@ -385,7 +406,11 @@ ALTER TABLE `venda_produtos`
 -- AUTO_INCREMENT de tabela `agendamentos`
 --
 ALTER TABLE `agendamentos`
+<<<<<<<< HEAD:otica_db (3).sql
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+========
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 
 --
 -- AUTO_INCREMENT de tabela `clientes`
@@ -445,7 +470,44 @@ ALTER TABLE `vendas`
 -- AUTO_INCREMENT de tabela `venda_produtos`
 --
 ALTER TABLE `venda_produtos`
+<<<<<<<< HEAD:otica_db (3).sql
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+========
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- Estrutura da tabela `comprovantes_pagamento`
+--
+
+CREATE TABLE `comprovantes_pagamento` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `cliente_id` bigint(20) UNSIGNED NOT NULL,
+  `venda_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `nome_arquivo` varchar(255) NOT NULL,
+  `nome_original` varchar(255) NOT NULL,
+  `tipo_arquivo` varchar(50) DEFAULT NULL,
+  `tamanho_arquivo` int(11) DEFAULT NULL,
+  `valor_pagamento` decimal(10,2) DEFAULT NULL,
+  `descricao` text DEFAULT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `atualizado_em` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Índices para tabela `comprovantes_pagamento`
+--
+ALTER TABLE `comprovantes_pagamento`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_comprovantes_cliente` (`cliente_id`),
+  ADD KEY `idx_comprovantes_venda` (`venda_id`),
+  ADD KEY `idx_comprovantes_data` (`criado_em`);
+
+--
+-- AUTO_INCREMENT de tabela `comprovantes_pagamento`
+--
+ALTER TABLE `comprovantes_pagamento`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+>>>>>>>> 8edea5dc1299a6021138bc772b3c6c3e7472ee34:otica/otica_db.sql
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
