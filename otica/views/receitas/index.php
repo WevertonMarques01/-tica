@@ -19,6 +19,27 @@ try {
 include '../layout_base.php';
 ?>
 
+<script>
+function filtrarTabela() {
+    var input = document.getElementById('busca');
+    var filter = input.value.toLowerCase();
+    var table = document.querySelector('.table');
+    var rows = table.getElementsByTagName('tr');
+    
+    for (var i = 1; i < rows.length; i++) {
+        var nomeCell = rows[i].cells[1];
+        if (nomeCell) {
+            var nome = nomeCell.textContent || nomeCell.innerText;
+            if (nome.toLowerCase().indexOf(filter) > -1) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+}
+</script>
+
 <div class="card">
     <div class="flex justify-between items-center mb-4">
         <h2 class="card-title">
@@ -29,6 +50,10 @@ include '../layout_base.php';
             <i class="fas fa-plus"></i>
             Nova Receita
         </a>
+    </div>
+
+    <div class="mb-4">
+        <input type="text" id="busca" class="input" placeholder="Buscar receita por nome do cliente..." onkeyup="filtrarTabela()">
     </div>
     
     <?php if (empty($receitas)): ?>
@@ -54,7 +79,7 @@ include '../layout_base.php';
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="tabela-receitas">
                 <?php foreach ($receitas as $r): ?>
                 <tr>
                     <td><?php echo $r['id']; ?></td>
@@ -80,6 +105,12 @@ include '../layout_base.php';
                     <td><?php echo $r['data_receita'] ? date('d/m/Y', strtotime($r['data_receita'])) : '-'; ?></td>
                     <td>
                         <div class="actions">
+                            <a href="compartilhar_whatsapp.php?id=<?php echo $r['id']; ?>" target="_blank" class="btn-icon success" title="Compartilhar no WhatsApp">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="imprimir.php?id=<?php echo $r['id']; ?>" target="_blank" class="btn-icon success" title="Imprimir">
+                                <i class="fas fa-print"></i>
+                            </a>
                             <a href="excluir.php?id=<?php echo $r['id']; ?>" class="btn-icon danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta receita?');">
                                 <i class="fas fa-trash"></i>
                             </a>
