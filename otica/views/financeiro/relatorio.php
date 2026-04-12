@@ -39,13 +39,25 @@ include '../layout_base.php';
             <label for="data_fim" class="form-label">Data Fim</label>
             <input type="date" name="data_fim" id="data_fim" class="form-input" value="<?php echo $data_fim; ?>">
         </div>
-        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end;">
+        <div class="form-group" style="margin-bottom: 0; display: flex; align-items: flex-end; gap: 8px;">
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-search"></i>
                 Filtrar
             </button>
+            <a href="imprimir.php?data_inicio=<?php echo $data_inicio; ?>&data_fim=<?php echo $data_fim; ?>" target="_blank" class="btn btn-success">
+                <i class="fas fa-print"></i>
+                Imprimir
+            </a>
         </div>
     </form>
+    
+    <div class="flex gap-2 mb-6">
+        <a href="?data_inicio=<?php echo date('Y-m-d'); ?>&data_fim=<?php echo date('Y-m-d'); ?>" class="text-sm text-blue-600 hover:underline">Hoje</a>
+        <span class="text-gray-300">|</span>
+        <a href="?data_inicio=<?php echo date('Y-m-01'); ?>&data_fim=<?php echo date('Y-m-t'); ?>" class="text-sm text-blue-600 hover:underline">Este Mês</a>
+        <span class="text-gray-300">|</span>
+        <a href="?data_inicio=<?php echo date('Y-01-01'); ?>&data_fim=<?php echo date('Y-12-31'); ?>" class="text-sm text-blue-600 hover:underline">Este Ano</a>
+    </div>
     
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="stat-card blue" style="padding: 1.25rem;">

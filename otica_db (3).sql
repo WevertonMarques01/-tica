@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 10-Abr-2026 às 18:11
+-- Tempo de geração: 12-Abr-2026 às 17:25
 -- Versão do servidor: 10.4.32-MariaDB
 -- versão do PHP: 8.2.12
 
@@ -20,6 +20,32 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `otica_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `agendamentos`
+--
+
+CREATE TABLE `agendamentos` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `cliente_id` bigint(20) UNSIGNED NOT NULL,
+  `data_consulta` date NOT NULL,
+  `hora_consulta` time NOT NULL,
+  `tipo_consulta` varchar(50) DEFAULT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'agendado',
+  `observacoes` text DEFAULT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `atualizado_em` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Extraindo dados da tabela `agendamentos`
+--
+
+INSERT INTO `agendamentos` (`id`, `cliente_id`, `data_consulta`, `hora_consulta`, `tipo_consulta`, `status`, `observacoes`, `criado_em`, `atualizado_em`) VALUES
+(1, 1, '2026-04-12', '11:30:00', 'Exame de Vista', 'concluido', 'cuida', '2026-04-12 13:04:05', '2026-04-12 13:23:00'),
+(2, 4, '2026-04-13', '16:00:00', 'Exame de Vista', 'agendado', 'asdasdasdas', '2026-04-12 14:50:51', NULL);
 
 -- --------------------------------------------------------
 
@@ -46,8 +72,28 @@ CREATE TABLE `clientes` (
 
 INSERT INTO `clientes` (`id`, `nome`, `telefone`, `cpf`, `email`, `data_nascimento`, `criado_em`, `endereco`, `bairro`, `numero`) VALUES
 (1, 'Jefferson Computer', '8598446146', '645.165.750-60', 'jeffersoncomputer58@gmail.com', NULL, '2026-04-10 15:28:54', 'salaberga', '', 5),
-(2, 'teste', '(00) 00000-0000', '000.000.000-00', 'jeffersoncomputer58@gmail.com', NULL, '2026-04-10 15:38:27', 'salaberga', 'OUTRA BANDA', 1),
-(3, 'cirilo', '1111111111111111111', '000.000.121-21', 'ciriloerafaely@gmail.com', NULL, '2026-04-10 15:52:45', 'salaberga', 'OUTRA BANDA', 0);
+(3, 'cirilo', '1111111111111111111', '000.000.121-21', 'ciriloerafaely@gmail.com', NULL, '2026-04-10 15:52:45', 'salaberga', 'OUTRA BANDA', 0),
+(4, 'rafaely', '(11) 1111-1111', '11.111.111/111', 'rafaely@gamil.com', NULL, '2026-04-12 14:49:21', 'asdasd', 'a', 4);
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura da tabela `comprovantes_pagamento`
+--
+
+CREATE TABLE `comprovantes_pagamento` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `cliente_id` bigint(20) UNSIGNED NOT NULL,
+  `venda_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `nome_arquivo` varchar(255) NOT NULL,
+  `nome_original` varchar(255) NOT NULL,
+  `tipo_arquivo` varchar(50) DEFAULT NULL,
+  `tamanho_arquivo` int(11) DEFAULT NULL,
+  `valor_pagamento` decimal(10,2) DEFAULT NULL,
+  `descricao` text DEFAULT NULL,
+  `criado_em` timestamp NOT NULL DEFAULT current_timestamp(),
+  `atualizado_em` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -84,7 +130,9 @@ CREATE TABLE `logs` (
 INSERT INTO `logs` (`id`, `usuario_id`, `acao`, `detalhes`, `data`) VALUES
 (1, 2, 'logout', 'Logout realizado', '2025-08-17 01:27:57'),
 (2, 2, 'logout', 'Logout realizado', '2025-08-17 14:53:05'),
-(3, 2, 'logout', 'Logout realizado', '2025-08-17 14:53:47');
+(3, 2, 'logout', 'Logout realizado', '2025-08-17 14:53:47'),
+(4, 3, 'venda_excluida', 'Venda ID: 2 excluída', '2026-04-11 22:48:28'),
+(5, 3, 'cliente_excluido', 'Cliente ID: 2 (teste) excluído', '2026-04-11 22:48:44');
 
 -- --------------------------------------------------------
 
@@ -129,7 +177,7 @@ CREATE TABLE `produtos` (
 --
 
 INSERT INTO `produtos` (`id`, `nome`, `tipo`, `marca`, `modelo`, `cor`, `preco`, `estoque`, `criado_em`, `codigo`, `estoque_atual`, `preco_venda`, `descricao`) VALUES
-(1, 'teste', 're', 'er', 're', 'er', 1.00, 1, '2026-04-10 15:34:18', NULL, NULL, NULL, 'sadasd');
+(1, 'teste', 're', 'er', 're', 'er', 1.00, 0, '2026-04-10 15:34:18', NULL, 0, NULL, 'sadasd');
 
 -- --------------------------------------------------------
 
@@ -158,8 +206,7 @@ CREATE TABLE `receitas` (
 --
 
 INSERT INTO `receitas` (`id`, `cliente_id`, `esfera_od`, `cilindro_od`, `eixo_od`, `adicao_od`, `esfera_oe`, `cilindro_oe`, `eixo_oe`, `adicao_oe`, `obs`, `data_receita`, `validade`) VALUES
-(1, 1, '12', '12', '12', '12', '12', '12', '12', '12', 'asda', '2026-04-10', '2028-01-23'),
-(2, 2, '12', '12', '12', '12', '', '', '', '', 'ghdffghtdfgc', '2026-04-10', '2028-01-23');
+(1, 1, '12', '12', '12', '12', '12', '12', '12', '12', 'asda', '2026-04-10', '2028-01-23');
 
 -- --------------------------------------------------------
 
@@ -185,7 +232,7 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha_hash`, `permissao`, `perfil`, `ativo`, `criado_em`, `ultimo_login`, `updated_at`) VALUES
-(2, 'Orcleison', 'admin@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 1, 'admin', 1, '0000-00-00 00:00:00', NULL, NULL),
+(2, 'Orcleison', 'admin@otica.com', '$2y$10$6uoCoFXT/t0ltzIrOXAqd.tJyTIDjG0tvtZLN4lNiv8bUnxV4piXi', 1, 'admin', 1, '0000-00-00 00:00:00', NULL, NULL),
 (3, 'Dono', 'dono@otica.com', '$2y$10$hOs5f0jySdndayqjwaVATOsEoWWN6YqO4P75NsGvJCNnYs16Dl8qW', 0, 'admin', 1, '2026-04-09 17:30:02', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -209,7 +256,10 @@ CREATE TABLE `vendas` (
 
 INSERT INTO `vendas` (`id`, `cliente_id`, `usuario_id`, `total`, `forma_pagamento`, `data_venda`) VALUES
 (1, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:35:31'),
-(2, 1, 3, 1.00, 'dinheiro', '2026-04-10 15:37:56');
+(3, 3, 3, 1.00, 'dinheiro', '2026-04-12 14:23:29'),
+(4, 1, 3, 1.00, 'boleto', '2026-04-12 14:26:48'),
+(5, 4, 3, 1.00, 'pix', '2026-04-12 14:49:44'),
+(9, 4, 3, 1.00, 'dinheiro', '2026-04-12 15:21:55');
 
 -- --------------------------------------------------------
 
@@ -222,20 +272,34 @@ CREATE TABLE `venda_produtos` (
   `venda_id` int(11) DEFAULT NULL,
   `produto_id` int(11) DEFAULT NULL,
   `quantidade` int(11) DEFAULT NULL,
-  `preco_unitario` decimal(10,2) DEFAULT NULL
+  `preco_unitario` decimal(10,2) DEFAULT NULL,
+  `retirado` tinyint(1) NOT NULL DEFAULT 0,
+  `data_retirada` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Extraindo dados da tabela `venda_produtos`
 --
 
-INSERT INTO `venda_produtos` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`) VALUES
-(1, 1, 1, 1, 1.00),
-(2, 2, 1, 1, 1.00);
+INSERT INTO `venda_produtos` (`id`, `venda_id`, `produto_id`, `quantidade`, `preco_unitario`, `retirado`, `data_retirada`) VALUES
+(1, 1, 1, 1, 1.00, 0, NULL),
+(3, 3, 1, 1, 1.00, 0, NULL),
+(4, 4, 1, 1, 1.00, 0, NULL),
+(5, 5, 1, 1, 1.00, 0, NULL),
+(6, 9, 1, 1, 1.00, 1, '2026-04-12 17:21:55');
 
 --
 -- Índices para tabelas despejadas
 --
+
+--
+-- Índices para tabela `agendamentos`
+--
+ALTER TABLE `agendamentos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_agendamentos_cliente` (`cliente_id`),
+  ADD KEY `idx_agendamentos_data` (`data_consulta`),
+  ADD KEY `idx_agendamentos_status` (`status`);
 
 --
 -- Índices para tabela `clientes`
@@ -245,6 +309,15 @@ ALTER TABLE `clientes`
   ADD UNIQUE KEY `cpf` (`cpf`),
   ADD KEY `idx_clientes_cpf` (`cpf`),
   ADD KEY `idx_clientes_email` (`email`);
+
+--
+-- Índices para tabela `comprovantes_pagamento`
+--
+ALTER TABLE `comprovantes_pagamento`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_comprovantes_cliente` (`cliente_id`),
+  ADD KEY `idx_comprovantes_venda` (`venda_id`),
+  ADD KEY `idx_comprovantes_data` (`criado_em`);
 
 --
 -- Índices para tabela `financeiro`
@@ -309,10 +382,22 @@ ALTER TABLE `venda_produtos`
 --
 
 --
+-- AUTO_INCREMENT de tabela `agendamentos`
+--
+ALTER TABLE `agendamentos`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT de tabela `clientes`
 --
 ALTER TABLE `clientes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT de tabela `comprovantes_pagamento`
+--
+ALTER TABLE `comprovantes_pagamento`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `financeiro`
@@ -324,7 +409,7 @@ ALTER TABLE `financeiro`
 -- AUTO_INCREMENT de tabela `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT de tabela `ordens_servico`
@@ -354,13 +439,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `vendas`
 --
 ALTER TABLE `vendas`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de tabela `venda_produtos`
 --
 ALTER TABLE `venda_produtos`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

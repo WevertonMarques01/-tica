@@ -15,7 +15,7 @@ try {
     $stmt = $db->query("SELECT id, nome, cpf FROM clientes ORDER BY nome");
     $clientes = $stmt->fetchAll();
     
-    $stmt = $db->query("SELECT id, nome, preco FROM produtos WHERE estoque > 0 ORDER BY nome");
+    $stmt = $db->query("SELECT id, nome, preco, estoque FROM produtos WHERE estoque > 0 ORDER BY nome");
     $produtos = $stmt->fetchAll();
 } catch (PDOException $e) {
     $erro = 'Erro ao carregar dados: ' . $e->getMessage();
@@ -42,14 +42,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             foreach ($produtos_venda as $p) {
                 if (!empty($p['id']) && !empty($p['quantidade'])) {
-                    $stmt = $db->prepare("SELECT preco FROM produtos WHERE id = ?");
+                    $stmt = $db->prepare("SELECT preco, estoque FROM produtos WHERE id = ?");
                     $stmt->execute([$p['id']]);
                     $prod = $stmt->fetch();
                     
                     if ($prod) {
-                        $subtotal = $prod['preco'] * $p['quantidade'];
-                        $stmt = $db->prepare("INSERT INTO venda_produtos (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
-                        $stmt->execute([$venda_id, $p['id'], $p['quantidade'], $prod['preco']]);
+                        $retirado = !empty($p['retirado']) ? 1 : 0;
+                        $quantidade = (int)$p['quantidade'];
+                        
+                        $stmt = $db->prepare("INSERT INTO venda_produtos (venda_id, produto_id, quantidade, preco_unitario, retirado, data_retirada) VALUES (?, ?, ?, ?, ?, ?)");
+                        $stmt->execute([$venda_id, $p['id'], $quantidade, $prod['preco'], $retirado, $retirado ? date('Y-m-d H:i:s') : null]);
+                        
+                        if ($retirado) {
+                            $novoEstoque = $prod['estoque'] - $quantidade;
+                            if ($novoEstoque < 0) $novoEstoque = 0;
+                            $stmt = $db->prepare("UPDATE produtos SET estoque = ?, estoque_atual = ? WHERE id = ?");
+                            $stmt->execute([$novoEstoque, $novoEstoque, $p['id']]);
+                        }
                     }
                 }
             }
@@ -74,7 +83,7 @@ include '../layout_base.php';
 <style>
     .produto-row {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr auto;
+        grid-template-columns: 2fr 1fr 1fr 0.5fr auto;
         gap: 1rem;
         align-items: end;
         margin-bottom: 1rem;
@@ -174,8 +183,8 @@ include '../layout_base.php';
                                 <select name="produtos[0][id]" class="form-select produto-select">
                                     <option value="">Selecione</option>
                                     <?php foreach ($produtos as $p): ?>
-                                    <option value="<?php echo $p['id']; ?>" data-preco="<?php echo $p['preco']; ?>">
-                                        <?php echo htmlspecialchars($p['nome']); ?> - R$ <?php echo number_format($p['preco'], 2, ',', '.'); ?>
+                                    <option value="<?php echo $p['id']; ?>" data-preco="<?php echo $p['preco']; ?>" data-estoque="<?php echo $p['estoque']; ?>">
+                                        <?php echo htmlspecialchars($p['nome']); ?> - R$ <?php echo number_format($p['preco'], 2, ',', '.'); ?> (Estoque: <?php echo $p['estoque']; ?>)
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -187,6 +196,10 @@ include '../layout_base.php';
                             <div class="form-group">
                                 <label class="form-label">Subtotal</label>
                                 <input type="text" class="form-input produto-subtotal" value="R$ 0,00" readonly>
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-start;">
+                                <label class="form-label" style="font-size: 0.75rem; margin-bottom: 4px;">Retirado</label>
+                                <input type="checkbox" name="produtos[0][retirado]" value="1" class="produto-retirado" style="width: 20px; height: 20px; cursor: pointer;">
                             </div>
                             <button type="button" onclick="removeProduto(this)" class="btn-icon danger" title="Remover">
                                 <i class="fas fa-times"></i>
@@ -237,8 +250,8 @@ function addProduto() {
                 <select name="produtos[${produtoIndex}][id]" class="form-select produto-select">
                     <option value="">Selecione</option>
                     <?php foreach ($produtos as $p): ?>
-                    <option value="<?php echo $p['id']; ?>" data-preco="<?php echo $p['preco']; ?>">
-                        <?php echo htmlspecialchars($p['nome']); ?> - R$ <?php echo number_format($p['preco'], 2, ',', '.'); ?>
+                    <option value="<?php echo $p['id']; ?>" data-preco="<?php echo $p['preco']; ?>" data-estoque="<?php echo $p['estoque']; ?>">
+                        <?php echo htmlspecialchars($p['nome']); ?> - R$ <?php echo number_format($p['preco'], 2, ',', '.'); ?> (Estoque: <?php echo $p['estoque']; ?>)
                     </option>
                     <?php endforeach; ?>
                 </select>
@@ -250,6 +263,10 @@ function addProduto() {
             <div class="form-group">
                 <label class="form-label">Subtotal</label>
                 <input type="text" class="form-input produto-subtotal" value="R$ 0,00" readonly>
+            </div>
+            <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-start;">
+                <label class="form-label" style="font-size: 0.75rem; margin-bottom: 4px;">Retirado</label>
+                <input type="checkbox" name="produtos[${produtoIndex}][retirado]" value="1" class="produto-retirado" style="width: 20px; height: 20px; cursor: pointer;">
             </div>
             <button type="button" onclick="removeProduto(this)" class="btn-icon danger" title="Remover">
                 <i class="fas fa-times"></i>
