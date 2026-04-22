@@ -1,0 +1,62 @@
+================================================================================
+                  GUIA RÁPIDO DE INSTALAÇÃO - InfinityFree
+================================================================================
+
+1️⃣  BAIXE os arquivos do projeto ( todos os arquivos e pastas )
+
+2️⃣  NO PAINEL DO InfinityFree:
+    - Crie um banco de dados MySQL
+    - Anote: NOME do banco, USUÁRIO, SENHA, HOST (geralmente localhost)
+
+3️⃣  EDIÇÃO OBRIGATÓRIA:
+    Abra o arquivo: config/database.php
+    Altere as linhas:
+        define('DB_NAME', 'otica_db');     → para o nome do seu banco
+        define('DB_USER', 'root');         → para o usuário do MySQL
+        define('DB_PASS', '');             → para a senha do MySQL
+
+4️⃣  IMPORTE O BANCO DE DADOS:
+    - Acesse phpMyAdmin no painel do InfinityFree
+    - Selecione seu banco
+    - Importe o arquivo: otica_db.sql
+
+5️⃣  FAÇA UPLOAD DOS ARQUIVOS:
+    ⚠️  ATENÇÃO: FAÇA UPLOAD DE TODOS OS ARQUIVOS E PASTAS DO PROJETO para /public_html/
+
+    Opção A (FileZilla):
+    - Conecte via FTP
+    - Navegue até /public_html/
+    - SElecione TODOS os arquivos e pastas da raiz do projeto
+    - Arraste para /public_html/
+
+    Opção B (Gerenciador de arquivos):
+    - Compacte TODOS os arquivos em .zip (incluindo index.php, config/, assets/, etc.)
+    - No painel, vá para public_html/
+    - Extraia o .zip aqui
+
+    Após o upload, sua estrutura deve ficar assim:
+        public_html/
+        ├── index.php           ← AQUI (página inicial)
+        ├── login.php
+        ├── config/
+        ├── controllers/
+        ├── models/
+        ├── views/
+        ├── assets/
+        ├── img/
+        ├── uploads/
+        └── .htaccess
+
+6️⃣  PERMISSÕES (se necessário):
+    - Pasta uploads/ → Permissão 755 ou 777
+
+7️⃣  ACESSE SEU SITE:
+    https://seu-dominio.epizy.com
+    - Clique em "Entrar"
+    - Email: admin@otica.com
+    - Senha: admin123
+
+================================================================================
+⚠️  ERRO COMUM: Se aparecer "Página não encontrada" ou "404"
+   → Verifique se index.php está na raiz de public_html (não dentro de subpasta)
+================================================================================

@@ -1,0 +1,10 @@
+# Proteger diretório de uploads
+# Não permitir execução de arquivos PHP
+<Files "*.php">
+    Deny from all
+</Files>
+
+# Permitir apenas arquivos de imagem e PDF
+<FilesMatch "\.(jpg|jpeg|png|gif|pdf)$">
+    Allow from all
+</FilesMatch>
